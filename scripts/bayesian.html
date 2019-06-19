@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Bayesian Multilevel Modeling in R</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Bayesian Multilevel Modeling in R</h1>
+
+
+
+<div id="multilevel-modeling-summer-2019-sascha-gobel-and-susumu-shikano" class="section level5">
+<h5>Multilevel Modeling – Summer 2019 – Sascha Göbel and Susumu Shikano</h5>
+<p><strong>Content</strong></p>
+<ol style="list-style-type: decimal">
+<li>Fitting bayesian multilevel models</li>
+<li>Evaluating model fit</li>
+<li>Basic interpretation</li>
+<li>More examples</li>
+<li>Further reading</li>
+</ol>
+</div>
+<div id="fitting-bayesian-multilevel-models" class="section level2">
+<h2>1. Fitting bayesian multilevel models</h2>
+<p>Fitting a bayesian multilevel model requires two steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Set up a full probability model for all observable and unobservable quantities. This entails a detailed specification of the data, the likelihood, the priors, and the respective parameters and hyperparameters.</p></li>
+<li><p>Calculate the posterior probability distribution. This step usually requires Markov chain Monte Carlo sampling (MCMC) to numerically approximate the posterior distribution. Basically, launching from a random starting value in the parameter space, an MCMC algorithm takes a random walk through the parameter space (random draws from the unnormalized posterior in favor of parameter values that have relatively high posterior probability). In the long run, this random walk converges to the posterior probability distribution.</p></li>
+</ol>
+<div id="required-packages" class="section level5">
+<h5>Required packages</h5>
+<p>For fitting bayesian multilevel models, we make use of <a href="https://mc-stan.org/">Stan</a>, a platform for statistical modeling named after Stanislaw Ulam, a pioneer of Monte Carlo methods. Stan offers a probabilistic programming language to get full Bayesian statistical inference with MCMC sampling, using the No-U-Turn Sampler, a variant of the Hamiltonian Monte Carlo algorithm. Stan is currently considered the state of the art with a committed developer team and a growing community pushing its constant development and optimization.</p>
+<p>To install Stan on your machine, visit <a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started" class="uri">https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started</a> and follow the installation instructions. The <code>rstan</code> package offers an R interface to Stan, the <code>rstanarm</code> package allows for an easy <code>lme4</code> style implementation of Stan, and the <code>shinystan</code> and <code>bayesplot</code> packages provides interactive visual and numerical summaries of model parameters and convergence diagnostics for MCMC simulations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">&quot;rstan&quot;</span>, <span class="st">&quot;rstanarm&quot;</span>, <span class="st">&quot;shinystan&quot;</span>, <span class="st">&quot;bayesplot&quot;</span>))</code></pre></div>
+<p>Attach all packages:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rstan)
+<span class="kw">library</span>(rstanarm)
+<span class="kw">library</span>(shinystan)
+<span class="kw">library</span>(bayesplot)
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(ggplot2)</code></pre></div>
+</div>
+<div id="getting-the-data" class="section level5">
+<h5>Getting the data</h5>
+<p>We use the same data as in “Frequentist Multilevel Modeling in R I and II”.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xenodat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;xenodat.rds&quot;</span>)
+voterdat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;voterdat.rds&quot;</span>)</code></pre></div>
+</div>
+<div id="specifying-a-model" class="section level5">
+<h5>Specifying a model</h5>
+<p>In Stan, a model is specified as a single character string using Stan’s probabilistic programming language. This requires a lot more effort and information about the model than the typical R model formula. However, it also helps to develop a deep understanding of the statistical models we are dealing with and offers a framework to build both simple and complex models limited only by our imagination not by the availability of standard routines.</p>
+<p>We start by illustrating the core parts of Stan program code and the basic workflow with a simple varying-intercept model without predictors. Recall the first model from “Frequentist Multilevel Modeling in R I”:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{j}, \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(y_i\)</span> is a persons’s xenophobic tendency (mean centered, positive values indicate above average and negative values below average xenophobic tendencies), <span class="math inline">\(\mu\)</span> is the population intercept, <span class="math inline">\(\alpha_{j}\)</span> is a varying-intercept at the county level <span class="math inline">\(J\)</span> and <span class="math inline">\(\sigma^2_y\)</span> is the within-county/residual variance. The distribution for the county-level model is centered at 0 with <span class="math inline">\(\sigma^2_\alpha\)</span> denoting the between-county/group-level variance.</p>
+<p>To specify this model in Stan we have to declare the data, the parameters, the priors, and the likelihood. These steps take place in different program blocks. Some basics of the language:</p>
+<ul>
+<li>A Stan program is organized into a sequence of named blocks consisting of variable declarations and/or statements within curly braces. Here, we will learn about the data, parameters, and model blocks.</li>
+<li>Every line in a block ends with the semi-colon as end-of-command marker.</li>
+<li>Comments are indicated with a forward double slash.</li>
+<li>Stan is statically typed, i.e., you have to specify data types, which can have constraints. Two primitive data types exist: int (integer) and real (float). These can be assembled in vectors and matrices.</li>
+</ul>
+<p>We begin with declaring the data in the data block. We have to provide all information relevant to our model, i.e., the number of observations <span class="math inline">\(N\)</span> and the number of groups <span class="math inline">\(J\)</span> (see the ‘for <span class="math inline">\(i = 1, ..., n\)</span>’ and ‘<span class="math inline">\(j = 1, ..., J\)</span>’ parts above), the different values <span class="math inline">\(j\)</span> can take for observations in the data, and the observed oucome <span class="math inline">\(y\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;// DATA BLOCK</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=1&gt; N; // number of observations</span>
+<span class="st">  int&lt;lower=1&gt; J; // the number of groups, here counties</span>
+<span class="st">  int&lt;lower=1, upper=J&gt; county[N]; // county for each observation, length N array</span>
+<span class="st">  vector[N] y; // outcome, length N vector</span>
+<span class="st">}&quot;</span></code></pre></div>
+<p>The part within ‘&lt; &gt;’ specifies constraints of the data range. This is not always necessary, but providing at least lower bounds makes the program run faster. Note that the data specified within this block, i.e., ‘N’, ‘J’, ‘county’, and ‘y’ must later be passed to rstan’s <code>sampling</code> function as a list, and must be formatted according to the specified data types. We come back to this below.</p>
+<p>Next we have to declare the parameters of the model, i.e., <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\sigma^2_y\)</span>, <span class="math inline">\(\sigma^2_\alpha\)</span> in the parameters block.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;// PARAMETERS BLOCK</span>
+<span class="st">parameters {</span>
+<span class="st">  real mu; // population intercept</span>
+<span class="st">  vector[J] alpha; // varying-intercept for counties, length J vector</span>
+<span class="st">  real&lt;lower=0&gt; sigma_alpha; // between-group variance</span>
+<span class="st">  real&lt;lower=0&gt; sigma_y; // within-group/residual variance</span>
+<span class="st">}</span></code></pre></div>
+<p>Note how <span class="math inline">\(\alpha\)</span> is the declared as a vector of length <span class="math inline">\(J\)</span> as we obtain a parameter for each county <span class="math inline">\(j\)</span>. Further note that <span class="math inline">\(\sigma_y\)</span> and <span class="math inline">\(\sigma_\alpha\)</span> both have a lower-bound constraint at 0. This is because the scale parameter of the normal distribution (here the standard deviation, not the variance) must be positive.</p>
+<p>Finally we declare the priors for the parameters and hyperparameters as well as the likelihood in the model block.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;// MODEL BLOCK</span>
+<span class="st">model {</span>
+<span class="st">  // priors</span>
+<span class="st">  mu ~ normal(0, 10) // prior on population intercept</span>
+<span class="st">  alpha ~ normal(0, sigma_alpha) // prior on varying intercept</span>
+<span class="st">  sigma_y ~ normal(0, 10) // prior on residual standard deviation</span>
+<span class="st">  sigma_alpha ~ normal(0, 10) // hyperprior on group-level standard deviation</span>
+
+<span class="st">  // likelihood</span>
+<span class="st">  y ~ normal(mu + alpha[county], sigma_y)</span>
+<span class="st">}&quot;</span></code></pre></div>
+<p>Priors encode our prior beliefs about the distribution of parameters. So when asked to specify priors for the parameters in your model, imagine how the parameters to be estimated are distributed based on the current state of knowledge. As concerns the scale of this imagined distribution, it is very important to consider the scale of your data. If no prior information exists, avoid setting flat priors which put probability mass on parameter values that might be off-scale (e.g., in the logit case) or unreasonable. Instead, rely on common sense or theoretical expectations based on domain knowledge. In this example we use normal distributions on all priors and pretend not to have any prior knowledge on the matter, hence setting so called weakly informative priors. This means that we leave much room for quite large parameter values using rather large scale parameters. <span class="math inline">\(\mu\)</span> is centered at 0, since our data is scaled in such a way that 0 encodes the average. Note that both <span class="math inline">\(\sigma\)</span>’s are actually half-Normal distributions as the parameters are constrained to be postitive. Setting their scale parameters to 10 allows for really large within- and between-group variation, which encodes our lack of prior knowledge. <span class="math inline">\(\alpha\)</span> is centered at 0 because we include the population intercept, so <span class="math inline">\(\alpha\)</span> encodes group-specific deviations from the population intercept. Note that the scale parameter for <span class="math inline">\(\alpha\)</span> is not hardcoded but instead receives its own prior, <span class="math inline">\(\sigma_\alpha\)</span>, a hyperprior, i.e., a prior on a parameter of a prior. Setting appropriate priors is not always easy, it requires in depth knowledge of the data and the field of interest as well as practice, practice, practice.</p>
+<p>The last line in the model block shows the likelihood function based on a normal distribution which includes the linear predictor and the residual standard deviation. Note how the parameter <span class="math inline">\(\alpha\)</span> varies across counties via ‘[county]’. In this example, all sampling statements are fully vectorized, so we do not require any loops. This is not always possible and depends both on the complexity of the model and the specification of the data.</p>
+<p>Finally, we assemble all blocks in one string and save it with suffix .stan.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ml_lm &lt;-<span class="st"> &quot;// MULTILEVEL LINEAR MODEL WITH VARYING INTERCEPT</span>
+
+<span class="st">// DATA BLOCK</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=1&gt; N; // number of observations</span>
+<span class="st">  int&lt;lower=1&gt; J; // the number of groups, here counties</span>
+<span class="st">  int&lt;lower=1, upper=J&gt; county[N]; // county for each observation, length N array</span>
+<span class="st">  real y[N];</span>
+<span class="st">  //vector[N] y; // outcome, length N vector</span>
+<span class="st">}</span>
+
+<span class="st">// PARAMETERS BLOCK</span>
+<span class="st">parameters {</span>
+<span class="st">  real mu; // population intercept</span>
+<span class="st">  vector[J] alpha; // varying-intercept for counties, length J vector</span>
+<span class="st">  real&lt;lower=0&gt; sigma_alpha; // between-group variance</span>
+<span class="st">  real&lt;lower=0&gt; sigma_y; // within-group/residual variance</span>
+<span class="st">}</span>
+
+<span class="st">// MODEL BLOCK</span>
+<span class="st">model {</span>
+<span class="st">  // priors</span>
+<span class="st">  mu ~ normal(0, 10); // prior on population intercept</span>
+<span class="st">  alpha ~ normal(0, sigma_alpha); // prior on varying intercept</span>
+<span class="st">  sigma_y ~ normal(0, 10); // prior on residual standard deviation</span>
+<span class="st">  sigma_alpha ~ normal(0, 10); // hyperprior on group-level standard deviation</span>
+
+<span class="st">  // likelihood</span>
+<span class="st">  y ~ normal(mu + alpha[county], sigma_y);</span>
+<span class="st">}&quot;</span>
+
+<span class="kw">write</span>(ml_lm, <span class="st">&quot;ml_lm.stan&quot;</span>)</code></pre></div>
+</div>
+<div id="fitting-a-model" class="section level5">
+<h5>Fitting a model</h5>
+<p>Before we can fit the above specified model, the data specified in the “data block” must be provided in a list as <code>rstan</code> does not take data frames.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># transform the factor variable &quot;county&quot; to integer, rstan does not accept factors</span>
+xenodat<span class="op">$</span>county_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(xenodat<span class="op">$</span>county)
+
+<span class="co"># arrange the data in order of the integer variable county_int</span>
+xenodat &lt;-<span class="st"> </span><span class="kw">arrange</span>(xenodat, county_int)
+
+<span class="co"># assemble data in a list as specified in the &quot;data block&quot;</span>
+data_ml_lm &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">nrow</span>(xenodat),
+                   <span class="dt">J =</span>  <span class="kw">length</span>(<span class="kw">unique</span>(xenodat<span class="op">$</span>county_int)),
+                   <span class="dt">county =</span> xenodat<span class="op">$</span>county_int,
+                   <span class="dt">y =</span> xenodat<span class="op">$</span>xenopho)</code></pre></div>
+<p>Next we compile our specified model, i.e., translate to C++ code and compile into a dynamic shared object. This takes a while.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compiled_ml_lm &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="dt">file =</span> <span class="st">&quot;ml_lm.stan&quot;</span>)</code></pre></div>
+<p>As almost every laptop nowadays comes with a multicore processor, we also allow Stan to distribute the chains on different processor cores, i.e., parallelize. Note that only as many cores are used as number of chains are specified.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel<span class="op">::</span><span class="kw">detectCores</span>())</code></pre></div>
+<p>We are now ready to fit the model, i.e., draw posterior samples using the <code>sampling</code> function. This function takes several arguments. Here we provide the compiled model through the <code>object</code> and the data in a named list through the <code>data</code> argument. We specify 4 chains, which is usually enough to check convergence of the chains. The <code>iter</code> argument specifies the total number of iterations for each chain to run, the <code>warmup</code> argument sets how many of those iteration are considered warm-up or burn-in. We further tell the sampling function that the warmup iterations can be thrown away since we are only interested in post-warmup draws, which we save to disk via the <code>sample_file</code> argument.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_ml_lm &lt;-<span class="st"> </span><span class="kw">sampling</span>(<span class="dt">object =</span> compiled_ml_lm,
+                         <span class="dt">data =</span> data_ml_lm,
+                         <span class="dt">chains =</span> <span class="dv">4</span>,
+                         <span class="dt">iter =</span> <span class="dv">2000</span>,
+                         <span class="dt">warmup =</span> <span class="dv">1000</span>,
+                         <span class="dt">save_warmup =</span> <span class="ot">FALSE</span>,
+                         <span class="dt">sample_file =</span> <span class="st">&quot;fit_ml_lm_chains&quot;</span>)</code></pre></div>
+<p>Fitting this model does take a while. While Stan is generally considered quite fast, fitting a bayesian model can take a very long time depending on the complexity and parameterization of the model as well as the amount of data. When parallelizing the chains, R will show the progress in the Viewer panel instead of printing it to the console.</p>
+<p>Alternatively the same model can be fitted using familiar <code>lme4</code> regression formula via <code>rstanarm</code>, which also takes data frames and factor variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_ml_lm_easy &lt;-<span class="st"> </span><span class="kw">stan_lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>county), 
+                            <span class="dt">data =</span> xenodat)
+<span class="co">#&gt; Warning: 'rBind' is deprecated.</span>
+<span class="co">#&gt;  Since R version 3.2.0, base's rbind() should work fine with S4 objects</span>
+<span class="co"># use stan_glmer for multilevel glms</span></code></pre></div>
+<p>Working with <code>rstanarm</code> is just as convenient as working with <code>lme4</code>, you also use the same <code>fixef()</code> and <code>ranef()</code> commands. In addition, <code>rstanarm</code> covers a lot more models than <code>lme4</code>. However, it gives you somewhat less control over prior specifications, although it is perfectly possible to specify priors (see <code>?stan_lmer</code>). By default, rstanarm transforms the data and applies weakly informative priors. If you know what you are doing and apply standard models <code>rstanarm</code> is probably your best pick, saving a lot of work. However, writing out your model in full as done above yields not only more control in terms of priors and paramaeterizations but might actually be necessary for very specific problems or complex models. In addition, specifying <code>.stan</code> files yourself can teach you things about your model and statistics in general that <code>lme4</code> and <code>rstanarm</code> cannot.</p>
+</div>
+</div>
+<div id="evaluating-model-fit" class="section level2">
+<h2>2. Evaluating model fit</h2>
+<p>Before we have a look at and interpret the fitted model, we first evaluate the fit.</p>
+<div id="examining-traceplots" class="section level5">
+<h5>Examining traceplots</h5>
+<p>MCMC sampling numerically approximates the posterior distribution. Because in practice the sample we draw is finite, it is impossible to prove whether the sampler actually converged to the posterior distribution. However, given a large number of iterations we can check warning signs indicating that the chains have not converged. One way is to inspect the separate Markov chains via traceplots.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># show parameters of the fitted model</span>
+fit_ml_lm<span class="op">@</span>model_pars
+<span class="co">#&gt; [1] &quot;mu&quot;          &quot;alpha&quot;       &quot;sigma_alpha&quot; &quot;sigma_y&quot;     &quot;lp__&quot;</span>
+
+<span class="co"># extract the posterior for a few parameters from the fitted model</span>
+posterior_sample_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">as.array</span>(fit_ml_lm, 
+                               <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;alpha[1]&quot;</span>, <span class="st">&quot;alpha[20]&quot;</span>, 
+                                        <span class="st">&quot;alpha[41]&quot;</span>, <span class="st">&quot;sigma_alpha&quot;</span>, 
+                                        <span class="st">&quot;sigma_y&quot;</span>))
+
+<span class="kw">mcmc_trace</span>(posterior_sample_<span class="dv">1</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Due to the varying intercept we have estimated so many alpha parameters (one for each county) that inspecting the traceplot for all of them becomes impractical. Hence, we only select a few of them.</p>
+<p>The traceplots look good for the parameters we have selected for inspection. All chains mix well and explore the same region of parameters values. In addition, we can already see that <span class="math inline">\(mu\)</span> converged around 0, the <span class="math inline">\(\alpha\)</span>’s for different counties indicate substantive variation, which is also indicated by the value that the chains for <span class="math inline">\(\sigma_\alpha\)</span> converged on. Recalling the fitted model from “Frequentist Multilevel Modeling in R I” we see that the estimated parameter values are very similar.</p>
+</div>
+<div id="examining-split-hatr" class="section level5">
+<h5>Examining Split <span class="math inline">\(\hat{R}\)</span></h5>
+<p>The Split <span class="math inline">\(\hat{R}\)</span> potential scale reduction statistic provides an alternative to visually inspecting traceplots of all parameters for diagnosing convergence. It measures the ratio of the average variance of draws within each randomly initalized chain to the variance of the pooled draws across chains. If all chains converge to the same equilibrium behavior, these will be the same and Rhat will be 1. A Split <span class="math inline">\(\hat{R}\)</span> above 1.1 indicates problems with the fit.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract the split Rhat value for each parameter</span>
+rhats &lt;-<span class="st"> </span><span class="kw">rhat</span>(fit_ml_lm)
+
+<span class="co"># plot the distribution of the split Rhat values</span>
+<span class="kw">mcmc_rhat_hist</span>(rhats)
+<span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>This diagnostic does also look good, Split <span class="math inline">\(\hat{R}\)</span> is 1 or very close to 1 for all parameters.</p>
+</div>
+<div id="examining-n_eff" class="section level5">
+<h5>Examining <span class="math inline">\(n_{eff}\)</span></h5>
+<p>The effective sample size <span class="math inline">\(n_{eff}\)</span> estimates the number of independent draws from the posterior distribution and is an indicator of the accuracy or stability of the MCMC estimator. A very low effective sample size, i.e., very few effective samples per iteration, hints at biased estimates. <span class="math inline">\(n_{eff}\)</span> . The larger the ratio of <span class="math inline">\(n_{eff}\)</span> to <span class="math inline">\(N\)</span> the better. A ratio smaller than 0.1 indicates problems.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract estimates of neff for each parameter</span>
+neffs &lt;-<span class="st"> </span><span class="kw">neff_ratio</span>(fit_ml_lm)
+
+<span class="co"># plot the distribution of neff values</span>
+<span class="kw">mcmc_neff_hist</span>(neffs)
+<span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="co"># any neff values below 0.1</span>
+<span class="kw">which</span>(neffs <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.5</span>)
+<span class="co">#&gt;   mu lp__ </span>
+<span class="co">#&gt;    1  156</span></code></pre></div>
+</div>
+<div id="examining-autocorrelation-in-the-chains" class="section level5">
+<h5>Examining autocorrelation in the chains</h5>
+<p>In this example <span class="math inline">\(n_{eff}\)</span> is sufficiently large for each parameter. Autocorrelation in the chains usually manifests in small <span class="math inline">\(n_{eff}\)</span> as draws within chains are not independent. As before, we select some parameters as visually inspecting autocorrelation in the chains of all parameters is impractical.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmc_acf</span>(posterior_sample_<span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">30</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>As expected given the <span class="math inline">\(n_{eff}\)</span> values, there appears to be no autocorrelation in the chains for most of the parameters. The parameter <span class="math inline">\(\mu\)</span>, however, shows slight positive autocorrelation, which means that the chains tends to stay in the same area between iterations. This manifests in <span class="math inline">\(\mu\)</span> being a parameter with an <span class="math inline">\(n_{eff}\)</span> to <span class="math inline">\(N\)</span> ratio smaller than 0.5. This amount of autocorrelation is not severe, after all the <span class="math inline">\(n_{eff}\)</span> to <span class="math inline">\(N\)</span> is still above 0.1, but generally we want to see these autocorrelation plots drop to 0 quickly.</p>
+</div>
+<div id="examining-sampler-diagnostics" class="section level5">
+<h5>Examining sampler diagnostics</h5>
+<p>A look at Hamiltonian Monte Carlo (sampler) diagnostics concludes the evaluation of model fit. One function call suffices.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">check_hmc_diagnostics</span>(fit_ml_lm)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Divergences:</span>
+<span class="co">#&gt; 0 of 4000 iterations ended with a divergence.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Tree depth:</span>
+<span class="co">#&gt; 0 of 4000 iterations saturated the maximum tree depth of 10.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Energy:</span>
+<span class="co">#&gt; E-BFMI indicated no pathological behavior.</span></code></pre></div>
+<p>This function returns summaries of three important sampler diagnostics, each of which requires its own session to be well explained and understood. In a nutshell:</p>
+<ul>
+<li><p>Divergent transitions indicate that the sampler did not manage to fully explore the target distribution. This is really, really bad and might mean biased estimates. Divergent transitions can be false positives, too, but you have to check.</p></li>
+<li><p>The maximum treedepth is saturated if the sampler has reached the maximum number of steps in one iteration (<span class="math inline">\(2^{10}=1024\)</span> by default) and terminates to avoid long execution time. This is an efficiency problem, i.e., the sampler explores the target distribution but it takes longer and autocorrelation is higher.</p></li>
+<li><p>The energy Bayesian fraction of missing information is a rather technical diagnostic that indicates a slow exploration of the target parameter space and larger autocorrelations.</p></li>
+</ul>
+<p>A very convenient tool for quick inspection of these diagnostics is Stan’s ShinyStan interface. Try it.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">launch_shinystan</span>(fit_ml_lm)</code></pre></div>
+<p>To compare models, check out functions from the <code>loo</code> package.</p>
+<p>With this model everything looked splendid. Yet, this is more of an exception. A great advantage of Stan is that it alerts you to all kinds of problems where <code>lme4</code> would mostly stay silent. See section 5. Further Reading for guidance on how to deal with different warning messages.</p>
+</div>
+</div>
+<div id="basic-interpretation" class="section level2">
+<h2>3. Basic interpretation</h2>
+<p>We now briefly inspect the posterior summary of a fitted Stan model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(fit_ml_lm)
+<span class="co">#&gt; Inference for Stan model: ml_lm.</span>
+<span class="co">#&gt; 4 chains, each with iter=2000; warmup=1000; thin=1; </span>
+<span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;                mean se_mean   sd    2.5%     25%     50%     75%   97.5%</span>
+<span class="co">#&gt; mu             0.00    0.00 0.05   -0.10   -0.04    0.00    0.03    0.10</span>
+<span class="co">#&gt; alpha[1]      -0.93    0.00 0.20   -1.33   -1.07   -0.93   -0.80   -0.55</span>
+<span class="co">#&gt; alpha[2]      -0.34    0.00 0.17   -0.68   -0.46   -0.34   -0.23    0.00</span>
+<span class="co">#&gt; alpha[3]      -0.69    0.00 0.28   -1.23   -0.88   -0.68   -0.50   -0.14</span>
+<span class="co">#&gt; alpha[4]      -0.79    0.00 0.19   -1.17   -0.93   -0.79   -0.66   -0.41</span>
+<span class="co">#&gt; alpha[5]       0.15    0.00 0.32   -0.48   -0.07    0.15    0.36    0.78</span>
+<span class="co">#&gt; alpha[6]       0.61    0.00 0.26    0.09    0.43    0.61    0.79    1.11</span>
+<span class="co">#&gt; alpha[7]      -0.39    0.00 0.19   -0.76   -0.52   -0.39   -0.26   -0.01</span>
+<span class="co">#&gt; alpha[8]      -0.25    0.00 0.26   -0.75   -0.42   -0.25   -0.09    0.26</span>
+<span class="co">#&gt; alpha[9]       0.61    0.00 0.34   -0.06    0.38    0.61    0.84    1.28</span>
+<span class="co">#&gt; alpha[10]     -0.60    0.00 0.21   -1.01   -0.74   -0.61   -0.47   -0.20</span>
+<span class="co">#&gt; alpha[11]     -0.16    0.00 0.20   -0.57   -0.29   -0.16   -0.02    0.24</span>
+<span class="co">#&gt; alpha[12]     -0.27    0.00 0.21   -0.68   -0.41   -0.26   -0.13    0.13</span>
+<span class="co">#&gt; alpha[13]     -0.20    0.00 0.28   -0.74   -0.40   -0.20   -0.02    0.36</span>
+<span class="co">#&gt; alpha[14]      0.28    0.00 0.28   -0.28    0.09    0.28    0.47    0.85</span>
+<span class="co">#&gt; alpha[15]      0.78    0.00 0.24    0.30    0.62    0.78    0.95    1.27</span>
+<span class="co">#&gt; alpha[16]      0.51    0.00 0.21    0.11    0.37    0.51    0.65    0.92</span>
+<span class="co">#&gt; alpha[17]      0.13    0.00 0.17   -0.20    0.02    0.13    0.25    0.46</span>
+<span class="co">#&gt; alpha[18]      0.55    0.00 0.20    0.15    0.42    0.55    0.69    0.95</span>
+<span class="co">#&gt; alpha[19]      0.76    0.00 0.21    0.35    0.61    0.76    0.90    1.16</span>
+<span class="co">#&gt; alpha[20]      0.18    0.00 0.23   -0.28    0.02    0.19    0.34    0.62</span>
+<span class="co">#&gt; alpha[21]     -0.32    0.00 0.24   -0.78   -0.48   -0.32   -0.15    0.14</span>
+<span class="co">#&gt; alpha[22]      1.05    0.00 0.22    0.62    0.90    1.05    1.19    1.48</span>
+<span class="co">#&gt; alpha[23]      1.30    0.00 0.21    0.89    1.16    1.30    1.45    1.73</span>
+<span class="co">#&gt; alpha[24]      0.64    0.00 0.31    0.04    0.44    0.64    0.85    1.25</span>
+<span class="co">#&gt; alpha[25]      0.42    0.00 0.19    0.06    0.30    0.42    0.55    0.80</span>
+<span class="co">#&gt; alpha[26]      0.72    0.00 0.25    0.23    0.55    0.71    0.88    1.20</span>
+<span class="co">#&gt; alpha[27]     -0.39    0.00 0.27   -0.93   -0.56   -0.39   -0.21    0.12</span>
+<span class="co">#&gt; alpha[28]     -0.03    0.00 0.33   -0.67   -0.26   -0.04    0.20    0.63</span>
+<span class="co">#&gt; alpha[29]      0.37    0.00 0.12    0.14    0.29    0.37    0.45    0.60</span>
+<span class="co">#&gt; alpha[30]     -0.27    0.00 0.23   -0.73   -0.43   -0.27   -0.13    0.20</span>
+<span class="co">#&gt; alpha[31]      0.18    0.00 0.26   -0.34   -0.01    0.18    0.36    0.68</span>
+<span class="co">#&gt; alpha[32]     -0.59    0.00 0.21   -0.99   -0.72   -0.59   -0.44   -0.19</span>
+<span class="co">#&gt; alpha[33]     -0.36    0.00 0.17   -0.68   -0.47   -0.36   -0.25   -0.03</span>
+<span class="co">#&gt; alpha[34]     -0.35    0.00 0.15   -0.65   -0.45   -0.35   -0.24   -0.05</span>
+<span class="co">#&gt; alpha[35]      0.28    0.00 0.19   -0.08    0.15    0.28    0.40    0.64</span>
+<span class="co">#&gt; alpha[36]      0.60    0.00 0.26    0.08    0.43    0.60    0.77    1.12</span>
+<span class="co">#&gt; alpha[37]      0.49    0.00 0.26   -0.01    0.32    0.49    0.66    0.99</span>
+<span class="co">#&gt; alpha[38]      0.09    0.00 0.17   -0.23   -0.02    0.09    0.21    0.43</span>
+<span class="co">#&gt; alpha[39]      0.39    0.00 0.15    0.10    0.29    0.39    0.49    0.68</span>
+<span class="co">#&gt; alpha[40]      0.02    0.00 0.41   -0.78   -0.26    0.02    0.29    0.79</span>
+<span class="co">#&gt; alpha[41]      1.18    0.00 0.29    0.60    0.98    1.18    1.37    1.72</span>
+<span class="co">#&gt; alpha[42]      0.15    0.00 0.31   -0.46   -0.07    0.14    0.36    0.75</span>
+<span class="co">#&gt; alpha[43]     -0.56    0.00 0.22   -1.00   -0.72   -0.56   -0.41   -0.13</span>
+<span class="co">#&gt; alpha[44]     -0.02    0.00 0.24   -0.51   -0.18   -0.02    0.15    0.44</span>
+<span class="co">#&gt; alpha[45]     -0.13    0.00 0.28   -0.65   -0.31   -0.13    0.06    0.42</span>
+<span class="co">#&gt; alpha[46]     -1.22    0.00 0.25   -1.71   -1.39   -1.22   -1.06   -0.74</span>
+<span class="co">#&gt; alpha[47]      0.53    0.00 0.24    0.06    0.37    0.53    0.69    0.97</span>
+<span class="co">#&gt; alpha[48]      0.10    0.00 0.26   -0.40   -0.08    0.10    0.27    0.61</span>
+<span class="co">#&gt; alpha[49]     -1.09    0.00 0.25   -1.58   -1.26   -1.09   -0.92   -0.60</span>
+<span class="co">#&gt; alpha[50]     -0.49    0.00 0.28   -1.06   -0.67   -0.49   -0.31    0.08</span>
+<span class="co">#&gt; alpha[51]     -0.40    0.00 0.23   -0.87   -0.55   -0.40   -0.25    0.04</span>
+<span class="co">#&gt; alpha[52]     -0.06    0.00 0.25   -0.56   -0.22   -0.05    0.11    0.44</span>
+<span class="co">#&gt; alpha[53]      0.20    0.00 0.16   -0.12    0.10    0.20    0.31    0.52</span>
+<span class="co">#&gt; alpha[54]     -0.30    0.00 0.22   -0.72   -0.45   -0.30   -0.15    0.13</span>
+<span class="co">#&gt; alpha[55]     -0.24    0.00 0.26   -0.73   -0.41   -0.24   -0.07    0.25</span>
+<span class="co">#&gt; alpha[56]      0.08    0.00 0.23   -0.37   -0.07    0.08    0.24    0.55</span>
+<span class="co">#&gt; alpha[57]     -0.05    0.00 0.25   -0.54   -0.22   -0.06    0.12    0.46</span>
+<span class="co">#&gt; alpha[58]     -0.37    0.00 0.23   -0.82   -0.53   -0.37   -0.22    0.07</span>
+<span class="co">#&gt; alpha[59]     -0.27    0.00 0.22   -0.70   -0.42   -0.27   -0.13    0.15</span>
+<span class="co">#&gt; alpha[60]      0.09    0.00 0.16   -0.24   -0.01    0.09    0.20    0.42</span>
+<span class="co">#&gt; alpha[61]      0.03    0.00 0.24   -0.43   -0.14    0.03    0.19    0.49</span>
+<span class="co">#&gt; alpha[62]     -0.24    0.00 0.24   -0.70   -0.40   -0.24   -0.08    0.22</span>
+<span class="co">#&gt; alpha[63]      1.08    0.00 0.25    0.58    0.91    1.08    1.25    1.57</span>
+<span class="co">#&gt; alpha[64]     -0.18    0.00 0.34   -0.87   -0.40   -0.18    0.05    0.49</span>
+<span class="co">#&gt; alpha[65]      0.04    0.00 0.23   -0.41   -0.11    0.04    0.20    0.49</span>
+<span class="co">#&gt; alpha[66]     -0.24    0.00 0.27   -0.77   -0.42   -0.24   -0.07    0.30</span>
+<span class="co">#&gt; alpha[67]      0.01    0.00 0.23   -0.44   -0.15    0.00    0.16    0.47</span>
+<span class="co">#&gt; alpha[68]     -0.66    0.00 0.20   -1.05   -0.79   -0.65   -0.52   -0.27</span>
+<span class="co">#&gt; alpha[69]     -0.75    0.00 0.16   -1.06   -0.85   -0.75   -0.64   -0.44</span>
+<span class="co">#&gt; alpha[70]     -0.49    0.00 0.23   -0.94   -0.65   -0.49   -0.33   -0.04</span>
+<span class="co">#&gt; alpha[71]     -0.31    0.00 0.25   -0.81   -0.48   -0.31   -0.14    0.18</span>
+<span class="co">#&gt; alpha[72]      0.09    0.00 0.34   -0.58   -0.13    0.09    0.31    0.77</span>
+<span class="co">#&gt; alpha[73]     -0.82    0.00 0.21   -1.25   -0.96   -0.82   -0.68   -0.40</span>
+<span class="co">#&gt; alpha[74]     -0.40    0.00 0.22   -0.84   -0.56   -0.40   -0.25    0.04</span>
+<span class="co">#&gt; alpha[75]     -0.03    0.00 0.41   -0.83   -0.30   -0.02    0.24    0.78</span>
+<span class="co">#&gt; alpha[76]      0.70    0.00 0.16    0.38    0.59    0.70    0.80    1.02</span>
+<span class="co">#&gt; alpha[77]      0.86    0.00 0.27    0.34    0.68    0.86    1.04    1.38</span>
+<span class="co">#&gt; alpha[78]      0.94    0.00 0.19    0.58    0.82    0.94    1.07    1.33</span>
+<span class="co">#&gt; alpha[79]     -0.77    0.00 0.31   -1.36   -0.98   -0.76   -0.56   -0.18</span>
+<span class="co">#&gt; alpha[80]     -0.20    0.00 0.32   -0.82   -0.43   -0.20    0.02    0.41</span>
+<span class="co">#&gt; alpha[81]      0.11    0.00 0.28   -0.43   -0.07    0.11    0.29    0.65</span>
+<span class="co">#&gt; alpha[82]     -0.88    0.00 0.19   -1.24   -1.01   -0.88   -0.76   -0.52</span>
+<span class="co">#&gt; alpha[83]      0.78    0.00 0.22    0.34    0.63    0.78    0.94    1.21</span>
+<span class="co">#&gt; alpha[84]      0.26    0.00 0.28   -0.29    0.07    0.26    0.45    0.81</span>
+<span class="co">#&gt; alpha[85]     -2.23    0.00 0.18   -2.60   -2.35   -2.23   -2.11   -1.89</span>
+<span class="co">#&gt; alpha[86]      0.83    0.00 0.19    0.46    0.70    0.83    0.95    1.21</span>
+<span class="co">#&gt; alpha[87]     -0.69    0.00 0.34   -1.36   -0.91   -0.69   -0.45   -0.01</span>
+<span class="co">#&gt; alpha[88]      0.48    0.00 0.24    0.01    0.31    0.48    0.64    0.95</span>
+<span class="co">#&gt; alpha[89]     -0.52    0.00 0.31   -1.13   -0.73   -0.52   -0.31    0.10</span>
+<span class="co">#&gt; alpha[90]     -0.27    0.00 0.35   -0.95   -0.50   -0.27   -0.03    0.41</span>
+<span class="co">#&gt; alpha[91]     -0.96    0.00 0.23   -1.41   -1.11   -0.95   -0.81   -0.50</span>
+<span class="co">#&gt; alpha[92]     -0.54    0.00 0.21   -0.96   -0.68   -0.55   -0.41   -0.14</span>
+<span class="co">#&gt; alpha[93]     -0.33    0.00 0.17   -0.67   -0.45   -0.33   -0.22    0.01</span>
+<span class="co">#&gt; alpha[94]     -0.26    0.00 0.24   -0.74   -0.42   -0.26   -0.10    0.18</span>
+<span class="co">#&gt; alpha[95]     -1.15    0.00 0.19   -1.53   -1.28   -1.15   -1.02   -0.78</span>
+<span class="co">#&gt; alpha[96]     -0.67    0.00 0.25   -1.16   -0.83   -0.67   -0.51   -0.19</span>
+<span class="co">#&gt; alpha[97]     -0.31    0.00 0.31   -0.90   -0.52   -0.31   -0.10    0.29</span>
+<span class="co">#&gt; alpha[98]     -0.06    0.00 0.28   -0.59   -0.25   -0.05    0.14    0.49</span>
+<span class="co">#&gt; alpha[99]     -0.14    0.00 0.33   -0.80   -0.36   -0.13    0.09    0.52</span>
+<span class="co">#&gt; alpha[100]     1.13    0.00 0.28    0.58    0.94    1.13    1.32    1.68</span>
+<span class="co">#&gt; alpha[101]    -0.03    0.00 0.19   -0.40   -0.16   -0.03    0.09    0.34</span>
+<span class="co">#&gt; alpha[102]    -0.33    0.00 0.27   -0.87   -0.51   -0.34   -0.15    0.20</span>
+<span class="co">#&gt; alpha[103]     0.57    0.00 0.22    0.14    0.42    0.57    0.71    1.00</span>
+<span class="co">#&gt; alpha[104]    -0.08    0.00 0.18   -0.43   -0.20   -0.08    0.05    0.27</span>
+<span class="co">#&gt; alpha[105]     0.14    0.00 0.37   -0.59   -0.12    0.14    0.39    0.88</span>
+<span class="co">#&gt; alpha[106]    -0.04    0.00 0.15   -0.32   -0.14   -0.04    0.06    0.25</span>
+<span class="co">#&gt; alpha[107]     0.97    0.00 0.22    0.55    0.83    0.97    1.11    1.39</span>
+<span class="co">#&gt; alpha[108]     0.22    0.00 0.19   -0.16    0.09    0.22    0.35    0.58</span>
+<span class="co">#&gt; alpha[109]     0.72    0.00 0.20    0.35    0.59    0.72    0.85    1.10</span>
+<span class="co">#&gt; alpha[110]    -0.11    0.00 0.20   -0.50   -0.24   -0.11    0.02    0.27</span>
+<span class="co">#&gt; alpha[111]     0.34    0.00 0.24   -0.13    0.18    0.34    0.51    0.80</span>
+<span class="co">#&gt; alpha[112]    -0.27    0.00 0.23   -0.72   -0.43   -0.27   -0.12    0.17</span>
+<span class="co">#&gt; alpha[113]     0.48    0.00 0.23    0.02    0.33    0.48    0.63    0.94</span>
+<span class="co">#&gt; alpha[114]     0.47    0.00 0.16    0.16    0.36    0.47    0.58    0.78</span>
+<span class="co">#&gt; alpha[115]     0.59    0.00 0.18    0.25    0.48    0.59    0.71    0.93</span>
+<span class="co">#&gt; alpha[116]     0.38    0.00 0.14    0.11    0.29    0.38    0.48    0.66</span>
+<span class="co">#&gt; alpha[117]     0.23    0.00 0.22   -0.19    0.08    0.23    0.38    0.66</span>
+<span class="co">#&gt; alpha[118]     0.38    0.00 0.22   -0.06    0.23    0.39    0.53    0.82</span>
+<span class="co">#&gt; alpha[119]     0.58    0.00 0.21    0.17    0.44    0.58    0.72    0.99</span>
+<span class="co">#&gt; alpha[120]     0.18    0.00 0.18   -0.18    0.06    0.18    0.29    0.52</span>
+<span class="co">#&gt; alpha[121]    -0.52    0.00 0.14   -0.79   -0.61   -0.52   -0.42   -0.24</span>
+<span class="co">#&gt; alpha[122]     0.09    0.00 0.22   -0.35   -0.05    0.09    0.23    0.53</span>
+<span class="co">#&gt; alpha[123]     0.11    0.00 0.23   -0.34   -0.05    0.10    0.26    0.56</span>
+<span class="co">#&gt; alpha[124]    -0.07    0.00 0.22   -0.50   -0.22   -0.07    0.08    0.36</span>
+<span class="co">#&gt; alpha[125]     0.22    0.00 0.24   -0.25    0.05    0.23    0.38    0.69</span>
+<span class="co">#&gt; alpha[126]     0.35    0.00 0.22   -0.07    0.20    0.35    0.50    0.77</span>
+<span class="co">#&gt; alpha[127]     0.23    0.00 0.22   -0.20    0.09    0.23    0.38    0.67</span>
+<span class="co">#&gt; alpha[128]    -0.41    0.00 0.15   -0.71   -0.51   -0.41   -0.32   -0.13</span>
+<span class="co">#&gt; alpha[129]    -0.05    0.00 0.22   -0.48   -0.19   -0.05    0.10    0.40</span>
+<span class="co">#&gt; alpha[130]    -0.07    0.00 0.25   -0.56   -0.25   -0.07    0.10    0.43</span>
+<span class="co">#&gt; alpha[131]     0.14    0.00 0.27   -0.39   -0.04    0.14    0.33    0.67</span>
+<span class="co">#&gt; alpha[132]     0.45    0.00 0.23    0.01    0.29    0.45    0.61    0.90</span>
+<span class="co">#&gt; alpha[133]    -0.32    0.00 0.27   -0.87   -0.50   -0.32   -0.14    0.19</span>
+<span class="co">#&gt; alpha[134]     0.75    0.00 0.23    0.30    0.59    0.75    0.91    1.22</span>
+<span class="co">#&gt; alpha[135]    -0.74    0.00 0.26   -1.24   -0.92   -0.74   -0.56   -0.22</span>
+<span class="co">#&gt; alpha[136]     0.42    0.00 0.23   -0.05    0.26    0.42    0.57    0.87</span>
+<span class="co">#&gt; alpha[137]     0.26    0.00 0.15   -0.04    0.16    0.26    0.36    0.56</span>
+<span class="co">#&gt; alpha[138]    -0.11    0.00 0.26   -0.62   -0.28   -0.11    0.07    0.40</span>
+<span class="co">#&gt; alpha[139]    -0.40    0.00 0.27   -0.93   -0.59   -0.40   -0.22    0.14</span>
+<span class="co">#&gt; alpha[140]     0.75    0.00 0.24    0.25    0.59    0.75    0.91    1.22</span>
+<span class="co">#&gt; alpha[141]    -0.37    0.00 0.22   -0.81   -0.52   -0.37   -0.22    0.05</span>
+<span class="co">#&gt; alpha[142]     0.23    0.00 0.25   -0.25    0.06    0.23    0.39    0.75</span>
+<span class="co">#&gt; alpha[143]    -0.20    0.00 0.25   -0.69   -0.37   -0.20   -0.04    0.29</span>
+<span class="co">#&gt; alpha[144]    -0.30    0.00 0.22   -0.73   -0.44   -0.30   -0.16    0.16</span>
+<span class="co">#&gt; alpha[145]     0.10    0.00 0.42   -0.71   -0.18    0.09    0.38    0.92</span>
+<span class="co">#&gt; alpha[146]     0.08    0.00 0.37   -0.65   -0.18    0.07    0.33    0.80</span>
+<span class="co">#&gt; alpha[147]     0.59    0.00 0.27    0.07    0.40    0.59    0.77    1.11</span>
+<span class="co">#&gt; alpha[148]     0.30    0.00 0.23   -0.16    0.14    0.30    0.45    0.75</span>
+<span class="co">#&gt; alpha[149]     0.02    0.00 0.26   -0.48   -0.15    0.02    0.19    0.53</span>
+<span class="co">#&gt; alpha[150]    -0.75    0.00 0.34   -1.41   -0.97   -0.76   -0.53   -0.08</span>
+<span class="co">#&gt; alpha[151]    -0.37    0.00 0.25   -0.87   -0.54   -0.37   -0.19    0.13</span>
+<span class="co">#&gt; alpha[152]    -0.18    0.00 0.23   -0.64   -0.33   -0.18   -0.03    0.27</span>
+<span class="co">#&gt; sigma_alpha    0.60    0.00 0.04    0.52    0.57    0.59    0.62    0.68</span>
+<span class="co">#&gt; sigma_y        0.80    0.00 0.01    0.78    0.79    0.80    0.81    0.83</span>
+<span class="co">#&gt; lp__        -523.52    0.25 9.12 -542.94 -529.22 -523.17 -517.29 -506.64</span>
+<span class="co">#&gt;             n_eff Rhat</span>
+<span class="co">#&gt; mu           1055    1</span>
+<span class="co">#&gt; alpha[1]     5006    1</span>
+<span class="co">#&gt; alpha[2]     6315    1</span>
+<span class="co">#&gt; alpha[3]     7995    1</span>
+<span class="co">#&gt; alpha[4]     6317    1</span>
+<span class="co">#&gt; alpha[5]    11377    1</span>
+<span class="co">#&gt; alpha[6]     8481    1</span>
+<span class="co">#&gt; alpha[7]     5139    1</span>
+<span class="co">#&gt; alpha[8]     7254    1</span>
+<span class="co">#&gt; alpha[9]     9174    1</span>
+<span class="co">#&gt; alpha[10]    5842    1</span>
+<span class="co">#&gt; alpha[11]    8108    1</span>
+<span class="co">#&gt; alpha[12]    6824    1</span>
+<span class="co">#&gt; alpha[13]    8436    1</span>
+<span class="co">#&gt; alpha[14]    9227    1</span>
+<span class="co">#&gt; alpha[15]    7703    1</span>
+<span class="co">#&gt; alpha[16]    6525    1</span>
+<span class="co">#&gt; alpha[17]    5382    1</span>
+<span class="co">#&gt; alpha[18]    7265    1</span>
+<span class="co">#&gt; alpha[19]    6908    1</span>
+<span class="co">#&gt; alpha[20]    8276    1</span>
+<span class="co">#&gt; alpha[21]    8327    1</span>
+<span class="co">#&gt; alpha[22]    7151    1</span>
+<span class="co">#&gt; alpha[23]    7225    1</span>
+<span class="co">#&gt; alpha[24]    9178    1</span>
+<span class="co">#&gt; alpha[25]    7053    1</span>
+<span class="co">#&gt; alpha[26]    7832    1</span>
+<span class="co">#&gt; alpha[27]    9125    1</span>
+<span class="co">#&gt; alpha[28]    8859    1</span>
+<span class="co">#&gt; alpha[29]    3271    1</span>
+<span class="co">#&gt; alpha[30]    9087    1</span>
+<span class="co">#&gt; alpha[31]    7223    1</span>
+<span class="co">#&gt; alpha[32]    7042    1</span>
+<span class="co">#&gt; alpha[33]    5992    1</span>
+<span class="co">#&gt; alpha[34]    4581    1</span>
+<span class="co">#&gt; alpha[35]    5554    1</span>
+<span class="co">#&gt; alpha[36]    7813    1</span>
+<span class="co">#&gt; alpha[37]    8015    1</span>
+<span class="co">#&gt; alpha[38]    5220    1</span>
+<span class="co">#&gt; alpha[39]    4357    1</span>
+<span class="co">#&gt; alpha[40]    7337    1</span>
+<span class="co">#&gt; alpha[41]    8172    1</span>
+<span class="co">#&gt; alpha[42]    9452    1</span>
+<span class="co">#&gt; alpha[43]    7580    1</span>
+<span class="co">#&gt; alpha[44]    6435    1</span>
+<span class="co">#&gt; alpha[45]    9488    1</span>
+<span class="co">#&gt; alpha[46]    7319    1</span>
+<span class="co">#&gt; alpha[47]    7943    1</span>
+<span class="co">#&gt; alpha[48]   10328    1</span>
+<span class="co">#&gt; alpha[49]    6633    1</span>
+<span class="co">#&gt; alpha[50]    7755    1</span>
+<span class="co">#&gt; alpha[51]    7762    1</span>
+<span class="co">#&gt; alpha[52]    6786    1</span>
+<span class="co">#&gt; alpha[53]    6031    1</span>
+<span class="co">#&gt; alpha[54]    7435    1</span>
+<span class="co">#&gt; alpha[55]    7423    1</span>
+<span class="co">#&gt; alpha[56]    7100    1</span>
+<span class="co">#&gt; alpha[57]    8627    1</span>
+<span class="co">#&gt; alpha[58]    6493    1</span>
+<span class="co">#&gt; alpha[59]    6630    1</span>
+<span class="co">#&gt; alpha[60]    5281    1</span>
+<span class="co">#&gt; alpha[61]    8594    1</span>
+<span class="co">#&gt; alpha[62]    7156    1</span>
+<span class="co">#&gt; alpha[63]    6336    1</span>
+<span class="co">#&gt; alpha[64]    9660    1</span>
+<span class="co">#&gt; alpha[65]    6390    1</span>
+<span class="co">#&gt; alpha[66]    7433    1</span>
+<span class="co">#&gt; alpha[67]    6299    1</span>
+<span class="co">#&gt; alpha[68]    6030    1</span>
+<span class="co">#&gt; alpha[69]    4693    1</span>
+<span class="co">#&gt; alpha[70]    7677    1</span>
+<span class="co">#&gt; alpha[71]    8720    1</span>
+<span class="co">#&gt; alpha[72]    9724    1</span>
+<span class="co">#&gt; alpha[73]    8180    1</span>
+<span class="co">#&gt; alpha[74]    7014    1</span>
+<span class="co">#&gt; alpha[75]   10053    1</span>
+<span class="co">#&gt; alpha[76]    4699    1</span>
+<span class="co">#&gt; alpha[77]    7427    1</span>
+<span class="co">#&gt; alpha[78]    7252    1</span>
+<span class="co">#&gt; alpha[79]    9066    1</span>
+<span class="co">#&gt; alpha[80]    9400    1</span>
+<span class="co">#&gt; alpha[81]   10519    1</span>
+<span class="co">#&gt; alpha[82]    5395    1</span>
+<span class="co">#&gt; alpha[83]    6586    1</span>
+<span class="co">#&gt; alpha[84]    7937    1</span>
+<span class="co">#&gt; alpha[85]    5341    1</span>
+<span class="co">#&gt; alpha[86]    5959    1</span>
+<span class="co">#&gt; alpha[87]    8442    1</span>
+<span class="co">#&gt; alpha[88]    7646    1</span>
+<span class="co">#&gt; alpha[89]    9985    1</span>
+<span class="co">#&gt; alpha[90]    9020    1</span>
+<span class="co">#&gt; alpha[91]    8301    1</span>
+<span class="co">#&gt; alpha[92]    6595    1</span>
+<span class="co">#&gt; alpha[93]    6194    1</span>
+<span class="co">#&gt; alpha[94]    6326    1</span>
+<span class="co">#&gt; alpha[95]    5970    1</span>
+<span class="co">#&gt; alpha[96]    8654    1</span>
+<span class="co">#&gt; alpha[97]    9014    1</span>
+<span class="co">#&gt; alpha[98]    8680    1</span>
+<span class="co">#&gt; alpha[99]    8950    1</span>
+<span class="co">#&gt; alpha[100]   8296    1</span>
+<span class="co">#&gt; alpha[101]   6852    1</span>
+<span class="co">#&gt; alpha[102]   7665    1</span>
+<span class="co">#&gt; alpha[103]   7032    1</span>
+<span class="co">#&gt; alpha[104]   6566    1</span>
+<span class="co">#&gt; alpha[105]  11951    1</span>
+<span class="co">#&gt; alpha[106]   5372    1</span>
+<span class="co">#&gt; alpha[107]   7120    1</span>
+<span class="co">#&gt; alpha[108]   6650    1</span>
+<span class="co">#&gt; alpha[109]   5885    1</span>
+<span class="co">#&gt; alpha[110]   6805    1</span>
+<span class="co">#&gt; alpha[111]   8107    1</span>
+<span class="co">#&gt; alpha[112]   6894    1</span>
+<span class="co">#&gt; alpha[113]   8022    1</span>
+<span class="co">#&gt; alpha[114]   5408    1</span>
+<span class="co">#&gt; alpha[115]   5387    1</span>
+<span class="co">#&gt; alpha[116]   4888    1</span>
+<span class="co">#&gt; alpha[117]   7461    1</span>
+<span class="co">#&gt; alpha[118]   7276    1</span>
+<span class="co">#&gt; alpha[119]   7368    1</span>
+<span class="co">#&gt; alpha[120]   5415    1</span>
+<span class="co">#&gt; alpha[121]   4720    1</span>
+<span class="co">#&gt; alpha[122]   7252    1</span>
+<span class="co">#&gt; alpha[123]   6867    1</span>
+<span class="co">#&gt; alpha[124]   8302    1</span>
+<span class="co">#&gt; alpha[125]   8900    1</span>
+<span class="co">#&gt; alpha[126]   7895    1</span>
+<span class="co">#&gt; alpha[127]   6806    1</span>
+<span class="co">#&gt; alpha[128]   4752    1</span>
+<span class="co">#&gt; alpha[129]   7243    1</span>
+<span class="co">#&gt; alpha[130]   8972    1</span>
+<span class="co">#&gt; alpha[131]   8468    1</span>
+<span class="co">#&gt; alpha[132]   7180    1</span>
+<span class="co">#&gt; alpha[133]   9793    1</span>
+<span class="co">#&gt; alpha[134]   8784    1</span>
+<span class="co">#&gt; alpha[135]   9230    1</span>
+<span class="co">#&gt; alpha[136]   7090    1</span>
+<span class="co">#&gt; alpha[137]   5637    1</span>
+<span class="co">#&gt; alpha[138]   9301    1</span>
+<span class="co">#&gt; alpha[139]   7593    1</span>
+<span class="co">#&gt; alpha[140]   6118    1</span>
+<span class="co">#&gt; alpha[141]   6647    1</span>
+<span class="co">#&gt; alpha[142]   7353    1</span>
+<span class="co">#&gt; alpha[143]   7095    1</span>
+<span class="co">#&gt; alpha[144]   8931    1</span>
+<span class="co">#&gt; alpha[145]  10030    1</span>
+<span class="co">#&gt; alpha[146]   9356    1</span>
+<span class="co">#&gt; alpha[147]   7899    1</span>
+<span class="co">#&gt; alpha[148]   7987    1</span>
+<span class="co">#&gt; alpha[149]   8622    1</span>
+<span class="co">#&gt; alpha[150]   9309    1</span>
+<span class="co">#&gt; alpha[151]   5873    1</span>
+<span class="co">#&gt; alpha[152]   8588    1</span>
+<span class="co">#&gt; sigma_alpha  5166    1</span>
+<span class="co">#&gt; sigma_y      8376    1</span>
+<span class="co">#&gt; lp__         1382    1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Jun 10 18:59:01 2019.</span>
+<span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
+<span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
+<span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
+<p>This summary looks a bit different from what we get using <code>lme4</code> but in a way it is much easier to comprehend. On the top and bottom basic information about the model is shown. The rest of the summary lists the estimated parameters as specified in the Stan model. As the model includes a varying intercept over counties, the fitted model returns so many parameters that the output is truncated. Using <code>fit_ml_lm@model_pars</code> lets us know the remaining parameters. Here <span class="math inline">\(\mu\)</span> describes the population intercept and the <span class="math inline">\(\alpha\)</span>’s the county-specific deviations from this intercept, just as with <code>fixef()</code> and <code>ranef()</code> in <code>lme4</code>. Note, however, that this interpretation is not automatic in Stan but encoded in the model, if we alter the parameterization this interpretation in terms of deviations from a global intercept can change. The posterior estimates itself are shown in the ‘mean’ column, which shows the posterior means. Bayesian as opposed to frequentist analysis does not return a point estimate but a posterior distribution for every parameter - a consequence of the sampler exploring the parameter space and the reason for discarding the warm-up iterations where the chains are still in the process of converging. Accordingly, the column ‘se_mean’ is not the standard error in a frequentist sense, it is the Monte Carlo standard error, which estimates the error in estimating the posterior mean. The uncertainty of the estimates is rather encoded in the posterior standard deviation and quantiles shown in the summary output. The <span class="math inline">\(n_{eff}\)</span> and Split <span class="math inline">\(\hat{R}\)</span> diagnostics are also shown.</p>
+<p>If we want more information, we can also extract and plot the posterior of a parameter.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">posterior_konstanz &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(fit_ml_lm, <span class="dt">pars=</span><span class="kw">c</span>(<span class="st">'alpha[2]'</span>))
+<span class="kw">dim</span>(posterior_konstanz)
+<span class="co">#&gt; [1] 4000    1</span>
+<span class="kw">colnames</span>(posterior_konstanz)
+<span class="co">#&gt; [1] &quot;alpha[2]&quot;</span></code></pre></div>
+<p><code>as.data.frame</code> extracts the posterior from the fitted model and returns it as a data frame with columns reserved for parameters and rows representing the separate iterations/draws from the posterior over all chains. The <code>pars</code> argument allows to specify specific parameters of interest. Omitting this argument results in a data frame with posterior of all parameters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot of the posterior of ... using ggplot2</span>
+<span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">data =</span> posterior_konstanz, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">`</span><span class="dt">alpha[2]</span><span class="st">`</span>), <span class="dt">bins =</span> <span class="dv">50</span>, 
+                 <span class="dt">colour =</span> <span class="st">&quot;white&quot;</span>, <span class="dt">fill =</span> <span class="st">&quot;gray60&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> posterior_konstanz, <span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">median</span>(<span class="st">`</span><span class="dt">alpha[2]</span><span class="st">`</span>)), 
+             <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> posterior_konstanz, <span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">quantile</span>(<span class="st">`</span><span class="dt">alpha[2]</span><span class="st">`</span>, <span class="fl">0.025</span>)), 
+             <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> posterior_konstanz, <span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">quantile</span>(<span class="st">`</span><span class="dt">alpha[2]</span><span class="st">`</span>, <span class="fl">0.975</span>)), 
+             <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme_bw</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Level of xenophobia in Konstanz (deviation from intercept)&quot;</span>, 
+       <span class="dt">y =</span> <span class="st">&quot;Frequency&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">250</span>), <span class="dt">expand =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">expand =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>))</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Using the posterior means/medians we can build simple linear predictions as before in “Frequentist multilevel modeling I and II”. Doing the same thing not only for the medians but for the whole posterior, draw by draw, additionally gives us credible intervals around these predictions. We will learn an intuitive approach to compute, interpret, and visually communicate intervals for frequentist and Bayesian estimates in the next two sessions.</p>
+</div>
+<div id="more-examples" class="section level2">
+<h2>4. More examples</h2>
+<p>Here are two more complicated examples of Stan models, a linear model with varying intercepts for counties nested in states and one individual-level predictor (previously <code>lm_3</code>) and a logit model with varying intercepts for several variables and one individual-level predictor (previously <code>glm_3</code>). For more complicated implementations see section 5. Further reading below. As illustrated below, the advantage of specifying Stan models is that you write them down exactly according to the formal specification.</p>
+<div id="a-more-complex-linear-model" class="section level5">
+<h5>A more complex linear model</h5>
+<p>Recall the model <code>lm_3</code> from ‘Frequentist multilevel modeling in R I’.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{jk} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{jk} \sim\)</span> N<span class="math inline">\((\gamma_k, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span>
+</p>
+<p>Again, we first specify the Stan model and write it to a <code>.stan</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ml_lm2 &lt;-<span class="st"> &quot;// MULTILEVEL LINEAR MODEL WITH NESTED VARYING INTERCEPTS AND PREDICTOR</span>
+
+<span class="st">// DATA BLOCK</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=1&gt; N; // number of observations</span>
+<span class="st">  int&lt;lower=1&gt; J; // number of lower-level groups, here counties</span>
+<span class="st">  int&lt;lower=1&gt; K; // number of upper-level groups, here states</span>
+<span class="st">  int&lt;lower=1, upper=J&gt; county[N]; // county for each observation, length N array</span>
+<span class="st">  int&lt;lower=1, upper=K&gt; county_in_state[J]; // county within state for county-level observations, length J array</span>
+<span class="st">  vector[N] x; // individual-level predictor, length N</span>
+<span class="st">  vector[N] y; // outcome, length N vector</span>
+<span class="st">}</span>
+
+<span class="st">// PARAMETERS BLOCK</span>
+<span class="st">parameters {</span>
+<span class="st">  real mu; // population intercept</span>
+<span class="st">  real beta; // population slope</span>
+<span class="st">  vector[J] alpha; // varying-intercept for counties, length J vector</span>
+<span class="st">  vector[K] gamma; // varying-intercept for states, length K vector</span>
+<span class="st">  real&lt;lower=0&gt; sigma_gamma; // between-state variance</span>
+<span class="st">  real&lt;lower=0&gt; sigma_alpha; // between-county variance</span>
+<span class="st">  real&lt;lower=0&gt; sigma_y; // within-group/residual variance</span>
+<span class="st">}</span>
+
+<span class="st">// MODEL BLOCK</span>
+<span class="st">model {</span>
+<span class="st">  // priors</span>
+<span class="st">  mu ~ normal(0, 10); // prior on population intercept</span>
+<span class="st">  beta ~ normal(0, 10); // prior on population slope</span>
+<span class="st">  alpha ~ normal(gamma[county_in_state], sigma_alpha); // prior on varying intercept for counties</span>
+<span class="st">  gamma ~ normal(0, sigma_gamma); // prior on varying intercept for states</span>
+<span class="st">  sigma_y ~ normal(0, 10); // prior on residual standard deviation</span>
+<span class="st">  sigma_alpha ~ normal(0, 10); // hyperprior on county-level standard deviation</span>
+<span class="st">  sigma_gamma ~ normal(0, 10); // hyperprior on state-level standard deviation</span>
+
+<span class="st">  // likelihood</span>
+<span class="st">  y ~ normal(mu + alpha[county] + beta * x, sigma_y);</span>
+<span class="st">}&quot;</span>
+
+<span class="kw">write</span>(ml_lm2, <span class="st">&quot;ml_lm2.stan&quot;</span>)</code></pre></div>
+<p>Next we assemble the data in the appropriate format.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># transform the factor variables &quot;county&quot; and &quot;state&quot; to integers, rstan does not accept factors</span>
+xenodat<span class="op">$</span>county_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(xenodat<span class="op">$</span>county)
+xenodat<span class="op">$</span>state_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(xenodat<span class="op">$</span>state)
+
+<span class="co"># arrange the data in order of the integer variables county_int and state_int</span>
+xenodat &lt;-<span class="st"> </span><span class="kw">arrange</span>(xenodat, county_int, state_int)
+
+<span class="co"># create a vector of state_ids for counties</span>
+county_in_state &lt;-<span class="st"> </span><span class="kw">distinct</span>(xenodat, county_int, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>)<span class="op">$</span>state_int
+
+<span class="co"># assemble data in a list as specified in the &quot;data block&quot;</span>
+data_ml_lm2 &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">nrow</span>(xenodat),
+                    <span class="dt">J =</span> <span class="kw">length</span>(<span class="kw">unique</span>(xenodat<span class="op">$</span>county_int)),
+                    <span class="dt">K =</span> <span class="kw">length</span>(<span class="kw">unique</span>(xenodat<span class="op">$</span>state_int)),
+                    <span class="dt">county =</span> xenodat<span class="op">$</span>county_int,
+                    <span class="dt">county_in_state =</span> county_in_state,
+                    <span class="dt">x =</span> <span class="kw">as.integer</span>(xenodat<span class="op">$</span>sex),
+                    <span class="dt">y =</span> xenodat<span class="op">$</span>xenopho)</code></pre></div>
+<p>And finally compile and fit the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compiled_ml_lm2 &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="dt">file =</span> <span class="st">&quot;ml_lm2.stan&quot;</span>)
+
+fit_ml_lm2 &lt;-<span class="st"> </span><span class="kw">sampling</span>(<span class="dt">object =</span> compiled_ml_lm2,
+                       <span class="dt">data =</span> data_ml_lm2,
+                       <span class="dt">chains =</span> <span class="dv">4</span>,
+                       <span class="dt">iter =</span> <span class="dv">2000</span>,
+                       <span class="dt">warmup =</span> <span class="dv">1000</span>,
+                       <span class="dt">save_warmup =</span> <span class="ot">FALSE</span>,
+                       <span class="dt">sample_file =</span> <span class="st">&quot;fit_ml_lm2_chains&quot;</span>)
+
+fit_ml_lm2<span class="op">@</span>model_pars
+<span class="co">#&gt; [1] &quot;mu&quot;          &quot;beta&quot;        &quot;alpha&quot;       &quot;gamma&quot;       &quot;sigma_gamma&quot;</span>
+<span class="co">#&gt; [6] &quot;sigma_alpha&quot; &quot;sigma_y&quot;     &quot;lp__&quot;</span></code></pre></div>
+</div>
+<div id="a-logit-model" class="section level5">
+<h5>A logit model</h5>
+<p>Recall the model <code>glm_3</code> from ‘Frequentist multilevel modeling in R II’.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(l = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((0, \sigma^2_\zeta)\)</span> for <span class="math inline">\(m = 1, ..., M\)</span>
+</p>
+<p>First specify the Stan model and write it to a <code>.stan file</code>. Note that the priors here are now normal(0, 5), which is really weakly informative as we are on the logit scale now and none of the variables has really huge values (income for instance is divided by 10,000). In this situation a scale parameter of 5, spanning almost the complete logit scale close to 0 and 1, puts substantial probability mass on all reasonable values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ml_glm &lt;-<span class="st"> &quot;// MULTILEVEL LOGIT MODEL WITH MULTIPLE CROSSED VARYING INTERCEPTS AND PREDICTOR</span>
+
+<span class="st">// DATA BLOCK</span>
+<span class="st">data {</span>
+<span class="st">  int&lt;lower=1&gt; N; // number of observations</span>
+<span class="st">  int&lt;lower=1&gt; J; // number of racial groups</span>
+<span class="st">  int&lt;lower=1&gt; K; // number of age groups</span>
+<span class="st">  int&lt;lower=1&gt; L; // number of parties</span>
+<span class="st">  int&lt;lower=1&gt; M; // number of congressional districts</span>
+<span class="st">  int&lt;lower=1, upper=J&gt; race[N]; // race for each observation, length N array</span>
+<span class="st">  int&lt;lower=1, upper=K&gt; age[N]; // age for each observation, length N array</span>
+<span class="st">  int&lt;lower=1, upper=L&gt; party[N]; // party for each observations, length N array</span>
+<span class="st">  int&lt;lower=1, upper=M&gt; congdist[N]; // party for each observations, length N array</span>
+<span class="st">  vector[N] x; // individual-level predictor, length N</span>
+<span class="st">  int&lt;lower=0,upper=1&gt; y[N]; // outcome, length N vector</span>
+<span class="st">}</span>
+
+<span class="st">// PARAMETERS BLOCK</span>
+<span class="st">parameters {</span>
+<span class="st">  real mu; // population intercept</span>
+<span class="st">  real beta; // population slope</span>
+<span class="st">  vector[J] alpha; // varying-intercept for race, length J vector</span>
+<span class="st">  vector[K] gamma; // varying-intercept for age, length K vector</span>
+<span class="st">  vector[L] delta; // varying-intercept for party, length L vector</span>
+<span class="st">  vector[M] zeta; // varying-intercept for congdist, length M vector</span>
+<span class="st">  real&lt;lower=0&gt; sigma_alpha; // variance between racial groups</span>
+<span class="st">  real&lt;lower=0&gt; sigma_gamma; // variance between age groups</span>
+<span class="st">  real&lt;lower=0&gt; sigma_delta; // variance between parties</span>
+<span class="st">  real&lt;lower=0&gt; sigma_zeta; // variance between congressional districts</span>
+<span class="st">}</span>
+
+<span class="st">// MODEL BLOCK</span>
+<span class="st">model {</span>
+<span class="st">  // priors</span>
+<span class="st">  mu ~ normal(0, 5); // prior on population intercept</span>
+<span class="st">  beta ~ normal(0, 5); // prior on population slope</span>
+<span class="st">  alpha ~ normal(0, sigma_alpha); // prior on varying intercept for race</span>
+<span class="st">  gamma ~ normal(0, sigma_gamma); // prior on varying intercept for age</span>
+<span class="st">  delta ~ normal(0, sigma_delta); // prior on varying intercept for party</span>
+<span class="st">  zeta ~ normal(0, sigma_zeta); // prior on varying intercept for congdist</span>
+<span class="st">  sigma_alpha ~ normal(0, 5); // hyperprior on race-level standard deviation</span>
+<span class="st">  sigma_gamma ~ normal(0, 5); // hyperprior on age-level standard deviation</span>
+<span class="st">  sigma_delta ~ normal(0, 5); // hyperprior on party-level standard deviation</span>
+<span class="st">  sigma_zeta ~ normal(0, 5); // hyperprior on congdist-level standard deviation</span>
+
+<span class="st">  // likelihood</span>
+<span class="st">  y ~ bernoulli_logit(mu + alpha[race] + gamma[age] + delta[party] + zeta[congdist] + beta * x);</span>
+<span class="st">}&quot;</span>
+
+<span class="kw">write</span>(ml_glm, <span class="st">&quot;ml_glm.stan&quot;</span>)</code></pre></div>
+<p>Then assemble the data in the appropriate format.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># transform the factor variables &quot;race&quot;, &quot;age&quot;, &quot;party&quot;, &quot;congdist&quot; to integers, rstan does not accept factors</span>
+voterdat<span class="op">$</span>race_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>race)
+voterdat<span class="op">$</span>age_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>age)
+voterdat<span class="op">$</span>party_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>party)
+voterdat<span class="op">$</span>congdist_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>congdist)
+
+<span class="co"># arrange the data in order of the integer variables county_int and state_int</span>
+voterdat &lt;-<span class="st"> </span><span class="kw">arrange</span>(voterdat, race_int, age_int, party_int, congdist_int)
+
+<span class="co"># assemble data in a list as specified in the &quot;data block&quot;</span>
+data_ml_glm &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">N =</span> <span class="kw">nrow</span>(voterdat),
+                    <span class="dt">J =</span> <span class="kw">length</span>(<span class="kw">unique</span>(voterdat<span class="op">$</span>race_int)),
+                    <span class="dt">K =</span> <span class="kw">length</span>(<span class="kw">unique</span>(voterdat<span class="op">$</span>age_int)),
+                    <span class="dt">L =</span> <span class="kw">length</span>(<span class="kw">unique</span>(voterdat<span class="op">$</span>party_int)),
+                    <span class="dt">M =</span> <span class="kw">length</span>(<span class="kw">unique</span>(voterdat<span class="op">$</span>congdist_int)),
+                    <span class="dt">race =</span> voterdat<span class="op">$</span>race_int,
+                    <span class="dt">age =</span> voterdat<span class="op">$</span>age_int,
+                    <span class="dt">party =</span> voterdat<span class="op">$</span>party_int,
+                    <span class="dt">congdist =</span> voterdat<span class="op">$</span>congdist_int,
+                    <span class="dt">x =</span> voterdat<span class="op">$</span>income,
+                    <span class="dt">y =</span> <span class="kw">as.integer</span>(voterdat<span class="op">$</span>vote2018))</code></pre></div>
+<p>Finally compile and fit the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compiled_ml_glm &lt;-<span class="st"> </span><span class="kw">stan_model</span>(<span class="dt">file =</span> <span class="st">&quot;ml_glm.stan&quot;</span>)
+
+fit_ml_glm &lt;-<span class="st"> </span><span class="kw">sampling</span>(<span class="dt">object =</span> compiled_ml_glm,
+                       <span class="dt">data =</span> data_ml_glm,
+                       <span class="dt">chains =</span> <span class="dv">4</span>,
+                       <span class="dt">iter =</span> <span class="dv">2000</span>,
+                       <span class="dt">warmup =</span> <span class="dv">1000</span>,
+                       <span class="dt">save_warmup =</span> <span class="ot">FALSE</span>,
+                       <span class="dt">sample_file =</span> <span class="st">&quot;fit_ml_glm_chains&quot;</span>)
+<span class="co">#&gt; Warning: There were 7 divergent transitions after warmup. Increasing adapt_delta above 0.8 may help. See</span>
+<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
+<span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span>
+
+fit_ml_glm<span class="op">@</span>model_pars
+<span class="co">#&gt;  [1] &quot;mu&quot;          &quot;beta&quot;        &quot;alpha&quot;       &quot;gamma&quot;       &quot;delta&quot;      </span>
+<span class="co">#&gt;  [6] &quot;zeta&quot;        &quot;sigma_alpha&quot; &quot;sigma_gamma&quot; &quot;sigma_delta&quot; &quot;sigma_zeta&quot; </span>
+<span class="co">#&gt; [11] &quot;lp__&quot;</span></code></pre></div>
+<p>With so many modeled parameters the model already takes quite some time.</p>
+</div>
+</div>
+<div id="further-reading" class="section level2">
+<h2>5. Further reading</h2>
+<ul>
+<li><a href="http://elevanth.org/blog/2017/11/28/build-a-better-markov-chain/">Sampling algorithms</a></li>
+<li><a href="http://www.sumsar.net/files/posts/2017-bayesian-tutorial-exercises/stan_cheat_sheet2.12.pdf">Stan syntax cheat sheet</a></li>
+<li><a href="https://mc-stan.org/docs/2_19/stan-users-guide/index.html">Stan user guide with example models</a></li>
+<li><a href="https://mc-stan.org/docs/2_19/reference-manual/index.html">Stan reference manual</a></li>
+<li><a href="https://mc-stan.org/users/documentation/case-studies">Stan case studies</a></li>
+<li><a href="https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations">Prior recommendation</a></li>
+<li><a href="https://mc-stan.org/misc/warnings.html">Dealing with warning messages I</a></li>
+<li><a href="https://betanalpha.github.io/assets/case_studies/divergences_and_bias.html">Dealing with warning messages II</a></li>
+<li><a href="https://github.com/stan-dev/example-models">All models from Gelman/Hill 2007 and other textbooks translated to Stan code</a></li>
+</ul>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

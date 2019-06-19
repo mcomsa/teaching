@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Frequentist Multilevel Modeling in R I</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Frequentist Multilevel Modeling in R I</h1>
+
+
+
+<div id="multilevel-modeling-summer-2019-sascha-gobel-and-susumu-shikano" class="section level5">
+<h5>Multilevel Modeling – Summer 2019 – Sascha Göbel and Susumu Shikano</h5>
+<p><strong>Content</strong></p>
+<ol style="list-style-type: decimal">
+<li>Fitting frequentist linear multilevel models</li>
+<li>Evaluating model fit</li>
+<li>Basic interpretation</li>
+<li>Further reading</li>
+</ol>
+</div>
+<div id="fitting-frequentist-linear-multilevel-models" class="section level2">
+<h2>1. Fitting frequentist linear multilevel models</h2>
+<div id="required-packages" class="section level5">
+<h5>Required packages</h5>
+<p>We make use of the <code>lme4</code> package developed by Douglas Bates and colleagues for fitting frequentist multilevel models. The package supports fitting standard linear and generalized linear mixed-effects models. For more complex models <code>lme4</code> can’t handle, packages such as <code>nlme</code> or <code>glmmTMB</code> are available. The beauty of <code>lme4</code> is in the simplicity with which multilevel models can be fitted using the customary R syntax with a formula and data.frame, its efficient implementation in C++, and the existence of other packages that provide convenient tools for interacting with <code>lme4</code>.</p>
+<p>The <code>lme4</code> package is in active development, so better grab the newest version from github. We also require the <code>dplyr</code> package to enable data operations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
+<span class="kw">install_github</span>(<span class="st">&quot;lme4/lme4&quot;</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>) <span class="co"># this can take some time</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;dplyr&quot;</span>)</code></pre></div>
+<p>Then attach the package to make it available in you current session:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)
+<span class="kw">library</span>(dplyr)</code></pre></div>
+</div>
+<div id="getting-the-data" class="section level5">
+<h5>Getting the data</h5>
+<p>To illustrate linear multilevel modeling with <code>lme4</code> we investigate variation in levels of xenophobia across different geographies and conditional on individual as well as geography-specific characteristics. For this purpose, we use replication data from a BA thesis (Jochen C. Schäfer. 2017. Ausländerquote und Fremdenfeindlichkeit: Wann kippt die Stimmung?). Schäfer used data from the German part of the 2008 European Values Study complemented with small-scale regional data. The European Values Study survey measures political attitudes and values of european citizens, including items measuring xenophobia. The data comes in a strictly hierarchical/nested structure with three levels (individual respondent nested in counties (Landkreise), which are themselves nested in states (Bundesländer). We cover crossed, i.e., non-nested groupings in the session on generalized linear models. While cross-classified models are conceptually more difficult to grasp, we will see that both the notation and the estimation of such models is actually easier compared to nested models.</p>
+<p>To access the data in R, first specify your working directory via <code>setwd()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setwd</span>(<span class="st">&quot;FILE/PATH/TO/YOUR/DIRECTORY&quot;</span>)</code></pre></div>
+<p>and then import the data via <code>readRDS</code> (assuming the data is in your working directory, adjust file path if necessary):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xenodat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;xenodat.rds&quot;</span>)</code></pre></div>
+<p>The data contains the following variables for 1868 observations:</p>
+<ul>
+<li>xenopho - a simple additive index based on five items measuring respondents’ xenophobic tendencies. We additionally mean centered and standardized this variable so that its distribution better approximates a normal distribution. Positive values indicate above average and negative values below average xenophobic tendencies (outcome)</li>
+<li>sex - respondents’ sex (individua-level predictor)</li>
+<li>age - respondents’ age (individual-level predictor)</li>
+<li>foreignq - quota of foreigners (county-level predictor)</li>
+<li>foreignq2 - squared quota of foreigners to allow for a ceiling effect or a curvilinear realtionship (county-level predictor)</li>
+<li>county - county index (county-level group indicator)</li>
+<li>state - state index (state-level group indicator)</li>
+</ul>
+</div>
+<div id="specifying-a-model" class="section level5">
+<h5>Specifying a model</h5>
+<p>To specify a model in <code>lme4</code> write the outcome on the left and the linear predictor on the right side of the equation. In addition to this classical regression formula, vertical bars <code>|</code> are used within brackets to allow coefficients to vary by groups. Generally:</p>
+<ul>
+<li><code>y</code> denotes the outcome on the individual level</li>
+<li><code>~</code> separates the left and right hand side</li>
+<li><code>1</code> denotes the intercept</li>
+<li><code>x</code> denotes individual-level predictors</li>
+<li><code>u</code> denotes group-level predictors</li>
+<li><code>g</code> denotes group indices</li>
+<li>within brackets, variables for which coefficients shall vary by group are put to the left of the vertical bar and the respective group to the right, e.g., <code>(1 | g)</code> for a varying-intercept and <code>(1 + x | g)</code> for a varying-intercept and varying-slope model.</li>
+<li>with more than one grouping level and strictly hierarchical, i.e., nested groups, use slashes <code>/</code> or multiple interactions to include groups in the model, e.g., <code>(1 | g/g2)</code>, where g2 is strictly nested within g. This is equivalent to <code>(1 | g) + (1 | g:g2)</code>.</li>
+<li>with more than one grouping level and cross-classifications, i.e., non-nested groups, apply separate bracketing, e.g., <code>(1 | g) + (1 | g2)</code>.</li>
+<li>An <code>lme4</code> formula for a varying-intercept model with one level of grouping and one individual-level predictor is hence written as: <code>y ~ x + (1 | g)</code>. Including a group-level predictor results in: <code>y ~ x + u + (1 | g)</code>. Note that the group-level predictor must be specified outside the brackets together with the individual-level predictors. Accordingly, your data.frame must contain a column with precise group indices for the predictors and observations.</li>
+</ul>
+</div>
+<div id="fitting-linear-multilevel-models" class="section level5">
+<h5>Fitting linear multilevel models</h5>
+<p>Use <code>lme4</code>’s <code>lmer()</code> (linear mixed-effects regression) function to fit linear multilevel models. The <code>lmer()</code> function takes three central arguments:</p>
+<ul>
+<li>the <code>formula</code> argument is specified as depicted above</li>
+<li>the <code>data</code> argument takes the data.frame with the variables</li>
+<li>the <code>REML</code> argument expects <code>TRUE</code> or <code>FALSE</code>, specifying restricted maximum likelihood (REML) or maximum likelihood (ML) estimation. Both differ in the estimation of variances and REML is mostly prefered over ML, especially if the number of groups is small. Advice from Ben Bolker, one of the <code>lme4</code> authors: “It’s generally good to use REML, if it is available, when you are interested in the magnitude of the random effects variances, but never when you are comparing models with different fixed effects via hypothesis tests or information-theoretic criteria such as AIC.” (Bolker, Ben. 2015. Linear and generalized linear mixed models. In: Ecological Statistics. Contemporary Theory and Application, eds. Fox, Gordon A., Negrete-Yankelevich, Simoneta, and Sosa, Vinicio J., 309-334, Oxford: Oxford University Press.) For further function arguments not covered here, see <code>?lmer</code>.</li>
+</ul>
+<p>As for notation, we include the global/population/fixed intercept in the regression model for <span class="math inline">\(y\)</span> and center the distribution for the group-level models at 0. This allows for interpretations of the group-level parameters as deviations from the population intercept. It further aligns with the <code>lme4</code> output provided via the <code>fixef()</code> and <code>ranef()</code> functions and conceputally simplifies the construction of the linear predictor with multiple variables for grouping.</p>
+Let’s begin with a varying-intercept model without predictors:
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{j}, \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(\mu\)</span> is the population intercept, <span class="math inline">\(\alpha_{j}\)</span> is a varying-intercept at the county level <span class="math inline">\(J\)</span> and <span class="math inline">\(\sigma^2_y\)</span> is the within-county/residual variance. Note that the distribution for the county-level model is centered at 0 with <span class="math inline">\(\sigma^2_\alpha\)</span> denoting the between-county/group-level variance. In consequence, <span class="math inline">\(\alpha_{j}\)</span> is the deviation of the county-specific intercepts from the population intercept <span class="math inline">\(\mu\)</span> so that <span class="math inline">\(\mu\)</span> + <span class="math inline">\(\alpha_{j}\)</span> provides the county-specific intercepts. To estimate this model in R, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>county), 
+             <span class="dt">data =</span> xenodat, 
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)
+<span class="co">#&gt; Warning: 'rBind' is deprecated.</span>
+<span class="co">#&gt;  Since R version 3.2.0, base's rbind() should work fine with S4 objects</span></code></pre></div>
+<p>We will have a look at the fitted models and how to interpret them below, for now we learn how to estimate them. Next up is a varying-intercept model with an individual-level predictor included in the regression model for <span class="math inline">\(y\)</span>:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{j} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(\beta\)</span> represents the slope of <span class="math inline">\(x_i\)</span>, a person’s sex, which does not vary by county. To estimate this model in R, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>county),
+             <span class="dt">data =</span> xenodat,
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>Note how we have omitted the <span class="math inline">\(1\)</span> (intercept) in the regression for <span class="math inline">\(y\)</span> in the <code>formula</code> argument. This does not mean that we have actually removed the intercept, placing the <span class="math inline">\(1\)</span> in the regression for <span class="math inline">\(y\)</span> is always optional, however, it is not optional in the group-level models. If you actually want to remove the intercept, write <span class="math inline">\(0\)</span> instead of <span class="math inline">\(1\)</span>.</p>
+<p>In a next step, states are introduced as a second grouping level, which counties are nested in.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{jk} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{jk} \sim\)</span> N<span class="math inline">\((\gamma_k, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br>
+</p>
+<p>where <span class="math inline">\(\gamma_{k}\)</span> is a varying-intercept at the state level <span class="math inline">\(K\)</span> and <span class="math inline">\(\sigma^2_\gamma)\)</span> is the between-state variance. Note how <span class="math inline">\(\gamma_k\)</span> enters/informs the county-level model as a predictor, this is a direct consequence of the strict hierarchy of the data. <span class="math inline">\(\alpha_{jk}\)</span> is still a deviation from <span class="math inline">\(\mu\)</span>, since <span class="math inline">\(\gamma_k\)</span> is centered at <span class="math inline">\(0\)</span> but some of this is now attributed to variation at the state level.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># first, check whether the data are actually nested (TRUE), or rather cross-classified (FALSE)</span>
+<span class="kw">isNested</span>(xenodat<span class="op">$</span>county, xenodat<span class="op">$</span>state) 
+<span class="co">#&gt; [1] TRUE</span>
+lm_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state<span class="op">/</span>county),
+             <span class="dt">data =</span> xenodat,
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>Now we add a group-level predictor to the model, the quota of foreigners at the county level:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{jk} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{jk} \sim\)</span> N<span class="math inline">\((\gamma_k + \beta_1 u_j + \beta_2 u{_j^2}, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br>
+</p>
+<p>where <span class="math inline">\(\beta_1\)</span> is the slope of the county-level predictor <span class="math inline">\(u_j\)</span>, the quota of foreigners, and <span class="math inline">\(\beta_2\)</span> is the slope of the squared quota of foreigners <span class="math inline">\(u{_j^2}\)</span>. We include <span class="math inline">\(u{_j^2}\)</span> in the model to allow for a ceiling effect, i.e., that the model predicts changes in xenophobic tendencies conditional on the quota of foreigners only up to a certain quota level, or for the possibility of a non-linear relationship, such that the model predicts changes in xenophobic tendencies to reverse at a specific quota level.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>foreignq <span class="op">+</span><span class="st"> </span>foreignq2 <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state<span class="op">/</span>county),
+             <span class="dt">data =</span> xenodat,
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>Finally, we row back to a somewhat simpler model without states as the second grouping variable but allow the slope of the individual-level predictor <span class="math inline">\(x_i\)</span>, a person’s sex, to vary across counties, i.e., a varying slope.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu_\alpha + \mu_\beta x_i + \alpha_{j} + \beta_{j} x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{j} \sim\)</span> N<span class="math inline">\((\beta_1 u_j + \beta_2 u{_j^2}, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\beta_{j} \sim\)</span> N<span class="math inline">\((\beta_3 u_j + \beta_4 u{_j^2}, \sigma^2_\beta)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br>
+</p>
+<p>where <span class="math inline">\(\mu_\beta\)</span> is the population slope/fixed effect of <span class="math inline">\(x_i\)</span>, a person’s sex. Before, this was <span class="math inline">\(\beta\)</span>, but this slope varies across counties now, <span class="math inline">\(\beta_{j}\)</span> is therefore the deviation of the county-specific slopes from the population slope <span class="math inline">\(\mu_\beta\)</span>. The population intercept <span class="math inline">\(\mu\)</span> is now <span class="math inline">\(\mu_\alpha\)</span> to distinguish it from <span class="math inline">\(\mu_\beta\)</span>. The quota and squared quota of foreigners are also included as group-level predictors in the model for <span class="math inline">\(\beta_{j}\)</span>. However, to allow for this, we have to additionaly interact the quota and squared quota of foreigners with a person’s sex in <code>lmer()</code>. Note that the models for <span class="math inline">\(\alpha_{j}\)</span> and <span class="math inline">\(\beta_{j}\)</span> are still centered at 0, but the group-level predictors are added.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_<span class="dv">5</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>sex<span class="op">:</span>foreignq <span class="op">+</span><span class="st"> </span>sex<span class="op">:</span>foreignq2 <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span>sex <span class="op">|</span><span class="st"> </span>county), 
+             <span class="dt">data =</span> xenodat, 
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+</div>
+<div id="evaluating-model-fit" class="section level2">
+<h2>2. Evaluating model fit</h2>
+<div id="required-packages-1" class="section level5">
+<h5>Required packages</h5>
+<p>In addition to the <code>lme4</code> package, several R packages exist that operate on objects of class <code>merMod</code> returned by <code>lmer()</code> and <code>glmer()</code> calls and provide methods for evaluating model fit:</p>
+<ul>
+<li>the <code>arm</code> package accompanies the book “Data Analysis Using Regression and Multilevel/Hierarchical Models” by Andrew Gelman and Jennifer Hill</li>
+<li>the <code>sjstats</code> package offers convenience functions for common statistical computations</li>
+<li>the <code>merTools</code> package provides a broad set of convenience functions for interacting with <code>lmer()</code> and <code>glmer()</code> output</li>
+<li>the <code>DHARMa</code> package provides a simulation-based approach for residual diagnostics for models produced by <code>lmer()</code> and <code>glmer()</code></li>
+<li>the <code>lmerTest</code> provides p-values via Satterthwaite’s degrees of freedom method, which <code>lme4</code> does not deliver.</li>
+<li>the <code>iimm</code> package similarly provides improved inference using a Student’s t-distribution with degrees of freedom determined by the m-l-1 heuristic, the Satterthwaite, or the Kenward-Roger method.</li>
+</ul>
+<p>Due to the limited amount of time to cover all this material, we will only use the <code>arm</code> and <code>sjstats</code> packages. In addition and in line with Gelman and Hill, statistical significance is not the object of the analysis here. However, the “Further reading” section below also links to material that introduces the other packages.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">&quot;arm&quot;</span>, <span class="st">&quot;sjstats&quot;</span>))</code></pre></div>
+<p>Attach all packages:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(arm)
+<span class="kw">library</span>(sjstats)</code></pre></div>
+</div>
+<div id="ml-or-reml" class="section level5">
+<h5>ML or REML?</h5>
+<p>Recall that a linear multilevel model may be estimated using ML or REML. ML estimates of variance parameters in multilevel models do have a small-sample bias. Meaning, with large sample sizes and many groups, ML is said to perform well as regards the estimation of variance components. However, when the number of upper-level groups is small, ML variance estimates are negatively biased, i.e., underestimated, even if the lower-level sample is very large. In such cases, REML estimates provide much improved variance estimates. Even if your interest is in the coefficient estimates and not the variance components, this is still important as the variance estimates play a key role in the computation of standard errors.</p>
+<p>Let’s compare some models to illustrate the differences in variance estimates between ML and REML. We compare the <code>lm_2</code> model from above, with the intercept varying by county and one individual-level predictor. For this model we used REML, so we fit the model again, this time via ML.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_2_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>county),
+               <span class="dt">data =</span> xenodat,
+               <span class="dt">REML =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p>Now we compare the difference in the between-group variance between <code>lm_2</code> (REML) and <code>lm_2_2</code> (ML):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">re_var</span>(lm_<span class="dv">2</span>)
+<span class="co">#&gt;       Within-group-variance:    0.646</span>
+<span class="co">#&gt;      Between-group-variance:    0.350 (county)</span>
+<span class="kw">re_var</span>(lm_2_<span class="dv">2</span>)
+<span class="co">#&gt;       Within-group-variance:    0.645</span>
+<span class="co">#&gt;      Between-group-variance:    0.347 (county)</span></code></pre></div>
+<p>The between-group variances are fairly similar. This is good and as expected as we have plenty of upper-level groups (152 counties). What happens if we reduce the number of groups by varying the intercept at the state- instead of the county-level:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_2_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state),
+               <span class="dt">data =</span> xenodat,
+               <span class="dt">REML =</span> <span class="ot">TRUE</span>)
+
+lm_2_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state),
+               <span class="dt">data =</span> xenodat,
+               <span class="dt">REML =</span> <span class="ot">FALSE</span>)
+
+<span class="kw">re_var</span>(lm_2_<span class="dv">3</span>)
+<span class="co">#&gt;       Within-group-variance:    0.922</span>
+<span class="co">#&gt;      Between-group-variance:    0.110 (state)</span>
+<span class="kw">re_var</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt;       Within-group-variance:    0.922</span>
+<span class="co">#&gt;      Between-group-variance:    0.100 (state)</span></code></pre></div>
+<p>Here the difference between the ML and REML estimated variances is a lot more apparent (also in relative terms). Still, 15 states is already quite a lot. So we run the same models once more but this time with a subset of the data that only covers three states.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">states_subset &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Bayern&quot;</span>, <span class="st">&quot;Niedersachsen&quot;</span>, <span class="st">&quot;Bremen&quot;</span>)
+
+lm_2_<span class="dv">5</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state),
+             <span class="dt">data =</span>  dplyr<span class="op">::</span><span class="kw">filter</span>(xenodat, state <span class="op">%in%</span><span class="st"> </span>states_subset),
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)
+
+lm_2_<span class="dv">6</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state),
+             <span class="dt">data =</span> dplyr<span class="op">::</span><span class="kw">filter</span>(xenodat, state <span class="op">%in%</span><span class="st"> </span>states_subset),
+             <span class="dt">REML =</span> <span class="ot">FALSE</span>)
+
+<span class="kw">re_var</span>(lm_2_<span class="dv">5</span>)
+<span class="co">#&gt;       Within-group-variance:    0.876</span>
+<span class="co">#&gt;      Between-group-variance:    0.527 (state)</span>
+<span class="kw">re_var</span>(lm_2_<span class="dv">6</span>)
+<span class="co">#&gt;       Within-group-variance:    0.873</span>
+<span class="co">#&gt;      Between-group-variance:    0.332 (state)</span></code></pre></div>
+<p>With such a small number of upper-level groups the estimated variances diverge drastically between ML and REML.</p>
+<p>Another interesting measure to consider is the intraclass correlation coefficient (ICC), i.e., the between-group-variance divided by the total variance (sum of between-group and within-group (residual) variance), which can be interpreted in terms of the proportion of the variance attributable to the grouping structure in the population. Of course, the bias in ML compared to REML estimation extends to this measure:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">icc</span>(lm_2_<span class="dv">5</span>) <span class="co"># REML, 3 upper-level groups</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Intraclass Correlation Coefficient for Linear mixed model</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Family : gaussian (identity)</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;   ICC (state): 0.3754</span>
+<span class="kw">icc</span>(lm_2_<span class="dv">6</span>) <span class="co"># ML, 3 upper-level groups</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Intraclass Correlation Coefficient for Linear mixed model</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Family : gaussian (identity)</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;   ICC (state): 0.2756</span></code></pre></div>
+<p>Note that for varying-intercept and -slope models the ICC differs at each unit of the predictors and cannot be interpreted as proportion of variance anymore (see Goldstein, Harvey, Browne William, and Rasbash Jon. 2010. Partitioning Variation in Multilevel Models. Understanding Statistics, 1:4, 223-231).</p>
+<p>Further, note that while model fit indices (see below) differ between REML and ML estimates, these are not recommended to make decision for either. This is because even without differences in variance estimates, differences in model fit indices do remain between REML and ML.</p>
+</div>
+<div id="model-selection" class="section level5">
+<h5>Model selection</h5>
+<p>In hierarchical modeling situations, models can not only include various amounts of predictors (fixed component) but can also vary as regards the predictors, including the intercept, that are allowed to vary by different groups. In order to evaluate model fit and select the “superior” model among a range of fitted models, several indices are available. Generally, when comparing two or more models, the model with the index closest to zero should be preferred. The log-likelihood and deviance (-2*log-likelihood) indices are measures of fit but do not account for complexity, i.e., the number of predictors in the model. The Akaike (AIC) and Bayesian information criterion (BIC) are adjusted deviance measures that penalize models adding extra predictors. For linear models estimated with REML the REML criterion at convergence is returned instead of the above. The Deviance information criterion (DIC) is said to be the bayesian version of the AIC. While AIC and BIC can be computed for REML models, too, these indices shouldn’t be used to decide for a ML or REML model (see above). Model fit indices can be inspected via the model summary or by computing them directly:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># AIC, BIC, logLik, and deviance at the top of summary output</span>
+<span class="kw">summary</span>(lm_2_<span class="dv">2</span>) <span class="co"># ML with intercept varying at county-level</span>
+<span class="co">#&gt; Linear mixed model fit by maximum likelihood  ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   4781.3   4803.4  -2386.6   4773.3     1864 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8435 -0.6064  0.0757  0.6341  2.4794 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county   (Intercept) 0.3469   0.5890  </span>
+<span class="co">#&gt;  Residual             0.6453   0.8033  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county, 152</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.02169    0.05553  -0.390</span>
+<span class="co">#&gt; sexmale      0.04506    0.03876   1.163</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.336</span>
+
+<span class="kw">summary</span>(lm_2_<span class="dv">4</span>) <span class="co"># ML with intercept varying at state-level</span>
+<span class="co">#&gt; Linear mixed model fit by maximum likelihood  ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   5192.4   5214.6  -2592.2   5184.4     1864 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.1667 -0.6370  0.0553  0.7475  2.0945 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  state    (Intercept) 0.0995   0.3154  </span>
+<span class="co">#&gt;  Residual             0.9216   0.9600  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  state, 15</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;              Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.006665   0.090412  -0.074</span>
+<span class="co">#&gt; sexmale      0.061387   0.044663   1.375</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.240</span>
+
+<span class="co"># REML criterion at convergence at the top of summary output</span>
+<span class="kw">summary</span>(lm_<span class="dv">2</span>) <span class="co"># REML with intercept varying at county level</span>
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 4782</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8425 -0.6065  0.0756  0.6337  2.4792 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county   (Intercept) 0.3496   0.5913  </span>
+<span class="co">#&gt;  Residual             0.6457   0.8036  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county, 152</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.02169    0.05570  -0.390</span>
+<span class="co">#&gt; sexmale      0.04505    0.03877   1.162</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.335</span>
+
+<span class="kw">summary</span>(lm_2_<span class="dv">3</span>) <span class="co"># REML with intercept varying at state-level</span>
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 5191.8</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.1706 -0.6360  0.0559  0.7449  2.0964 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  state    (Intercept) 0.1098   0.3313  </span>
+<span class="co">#&gt;  Residual             0.9219   0.9602  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  state, 15</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;              Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.005172   0.094225  -0.055</span>
+<span class="co">#&gt; sexmale      0.061398   0.044673   1.374</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.230</span>
+
+<span class="kw">summary</span>(lm_<span class="dv">3</span>) <span class="co"># REML with intercept varying at county-level nested within states </span>
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state/county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 4774.2</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8437 -0.6089  0.0591  0.6348  2.4586 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups       Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county:state (Intercept) 0.30078  0.5484  </span>
+<span class="co">#&gt;  state        (Intercept) 0.05089  0.2256  </span>
+<span class="co">#&gt;  Residual                 0.64570  0.8036  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county:state, 152; state, 15</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.01903    0.08366  -0.228</span>
+<span class="co">#&gt; sexmale      0.04347    0.03875   1.122</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.225</span>
+
+<span class="co"># log-likelihood</span>
+<span class="kw">logLik</span>(lm_2_<span class="dv">2</span>)
+<span class="co">#&gt; 'log Lik.' -2386.645 (df=4)</span>
+<span class="kw">logLik</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt; 'log Lik.' -2592.214 (df=4)</span>
+
+<span class="co"># deviance</span>
+<span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="kw">logLik</span>(lm_2_<span class="dv">2</span>)
+<span class="co">#&gt; 'log Lik.' 4773.289 (df=4)</span>
+<span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="kw">logLik</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt; 'log Lik.' 5184.428 (df=4)</span>
+
+<span class="co"># AIC</span>
+<span class="kw">AIC</span>(lm_2_<span class="dv">2</span>)
+<span class="co">#&gt; [1] 4781.289</span>
+<span class="kw">AIC</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt; [1] 5192.428</span>
+
+<span class="co"># BIC</span>
+<span class="kw">BIC</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt; [1] 5214.559</span>
+<span class="kw">BIC</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt; [1] 5214.559</span>
+
+<span class="co"># REML criterion</span>
+<span class="kw">REMLcrit</span>(lm_<span class="dv">2</span>)
+<span class="co">#&gt; [1] 4782.012</span>
+<span class="kw">REMLcrit</span>(lm_2_<span class="dv">3</span>)
+<span class="co">#&gt; [1] 5191.792</span>
+
+<span class="co"># DIC</span>
+<span class="kw">extractDIC</span>(lm_2_<span class="dv">2</span>)
+<span class="co">#&gt;      DIC </span>
+<span class="co">#&gt; 4773.289</span>
+<span class="kw">extractDIC</span>(lm_2_<span class="dv">4</span>)
+<span class="co">#&gt;      DIC </span>
+<span class="co">#&gt; 5184.428</span>
+<span class="kw">extractDIC</span>(lm_<span class="dv">2</span>)
+<span class="co">#&gt;      DIC </span>
+<span class="co">#&gt; 4764.567</span>
+<span class="kw">extractDIC</span>(lm_2_<span class="dv">3</span>)
+<span class="co">#&gt;      DIC </span>
+<span class="co">#&gt; 5177.064</span></code></pre></div>
+<p>No matter whether ML or REML is used, model fit indices indicate that an intercept varying by county fits the data much better than one varying by state. Interestingly, letting the intercept vary over counties nested within states does not improve model fit so much more.</p>
+<p>Note that due to the way variance components are estimated with REML, such models cannot meaningfully compared if they differ in their fixed components (structure of predictors) but only in ther random components. “The reason is that REML estimates the random effects by considering linear combinations of the data that remove the fixed effects. If these fixed effects are changed, the likelihoods of the two models will not be directly comparable.” (Faraway, Julian J. 2016. Extending the Linear Model with R. Generalized Linear, Mixed Effects, and Nonparametric Regression Models. Boca Raton: CRC Press.)</p>
+<p>To compare models, analysis of variance can be used. Here, two linear hierarchical models fitted with REML are compared that differ in their fixed components. Note how anova automatically refits these model with ML instead of REML for comparison:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(lm_<span class="dv">3</span>, lm_<span class="dv">4</span>)
+<span class="co">#&gt; refitting model(s) with ML (instead of REML)</span>
+<span class="co">#&gt; Data: xenodat</span>
+<span class="co">#&gt; Models:</span>
+<span class="co">#&gt; lm_3: xenopho ~ sex + (1 | state/county)</span>
+<span class="co">#&gt; lm_4: xenopho ~ sex + foreignq + foreignq2 + (1 | state/county)</span>
+<span class="co">#&gt;      Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(&gt;Chisq)</span>
+<span class="co">#&gt; lm_3  5 4776.3 4804.0 -2383.2   4766.3                         </span>
+<span class="co">#&gt; lm_4  7 4778.1 4816.9 -2382.1   4764.1 2.2135      2     0.3306</span></code></pre></div>
+</div>
+</div>
+<div id="basic-interpretation" class="section level2">
+<h2>3. Basic interpretation</h2>
+<p>Generally, for hierarchical models the same rules and obstacles of interpretation apply as for standard linear and generalized linear models but with additional components. Importantly, direct interpretation of the coefficients are usually only meaningful for linear models without interaction effects. For nonlinear models, only the sign is intuitively interpretable.</p>
+<p>We begin with understanding the different parts of the output from the <code>lmer()</code> function.</p>
+<p>In the summary for the models below, the “Fixed effects” part in the middle yields the population estimates (above <span class="math inline">\(\mu\)</span>) ignoring group level variation as well as the coefficients for the group-level pedictors. The “Random effects” part yields the group-level variance for intercepts (between-group-variance) and slopes (random-slope-variance). For linear models the residual variance (within-group-variance) is also shown. The number of observations and groups as well as their structure (nested/crossed) are shown at the bottom of the “Random Effects” part. The reported correlation between varying intercept and slope coefficients is both substantively interesting and might indicates issues with the model. A high correlation between the intercept and the coefficient for the predictor often indicate overparameterization, i.e., there is not enough data for a stable estimation given the amount of parameters. The “Correlation of Fixed Effects” part shows a correlation matrix of the estimated coefficients.</p>
+<p>Using the <code>fixef()</code> function, we can extract the population- and group-level estimates from the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fixef</span>(lm_<span class="dv">2</span>) <span class="co"># population-level estimates</span>
+<span class="co">#&gt; (Intercept)     sexmale </span>
+<span class="co">#&gt; -0.02169269  0.04505428</span>
+
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="co"># population-level intercept</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt; -0.02169269</span>
+
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="dv">1</span>] <span class="co"># population-level intercept</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt; -0.02169269</span>
+
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;sexmale&quot;</span>] <span class="co"># population-level slope for predictor</span>
+<span class="co">#&gt;    sexmale </span>
+<span class="co">#&gt; 0.04505428</span>
+
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="dv">2</span>] <span class="co"># population-level slope for predictor</span>
+<span class="co">#&gt;    sexmale </span>
+<span class="co">#&gt; 0.04505428</span></code></pre></div>
+<p>To extract the group-specific deviations from the population-level intercept and slope, use the <code>ranef()</code> function. Here we enclose the call to <code>ranef</code> in a call to <code>data.frame</code> to be able to get a more structured and brief overview:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">2</span>))) <span class="co"># county-specific deviations from population-level intercepts</span>
+<span class="co">#&gt;   grpvar        term</span>
+<span class="co">#&gt; 1 county (Intercept)</span>
+<span class="co">#&gt; 2 county (Intercept)</span>
+<span class="co">#&gt; 3 county (Intercept)</span>
+<span class="co">#&gt; 4 county (Intercept)</span>
+<span class="co">#&gt; 5 county (Intercept)</span>
+<span class="co">#&gt; 6 county (Intercept)</span>
+<span class="co">#&gt;                                                       grp    condval</span>
+<span class="co">#&gt; 1 Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald -0.9432837</span>
+<span class="co">#&gt; 2                 Baden-Württemberg – Freiburg – Konstanz -0.3384879</span>
+<span class="co">#&gt; 3                 Baden-Württemberg – Freiburg – Rottweil -0.6893775</span>
+<span class="co">#&gt; 4   Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis -0.7896226</span>
+<span class="co">#&gt; 5            Baden-Württemberg – Karlsruhe – Freudenstadt  0.1493607</span>
+<span class="co">#&gt; 6   Baden-Württemberg – Karlsruhe – Karlsruhe, Stadtkreis  0.6062714</span>
+
+<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">5</span>))[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,] <span class="co"># county-specific deviations from the population-level intercept </span>
+<span class="co">#&gt;   grpvar        term</span>
+<span class="co">#&gt; 1 county (Intercept)</span>
+<span class="co">#&gt; 2 county (Intercept)</span>
+<span class="co">#&gt; 3 county (Intercept)</span>
+<span class="co">#&gt; 4 county (Intercept)</span>
+<span class="co">#&gt; 5 county (Intercept)</span>
+<span class="co">#&gt;                                                       grp    condval</span>
+<span class="co">#&gt; 1 Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald -0.8871365</span>
+<span class="co">#&gt; 2                 Baden-Württemberg – Freiburg – Konstanz -0.1363321</span>
+<span class="co">#&gt; 3                 Baden-Württemberg – Freiburg – Rottweil -0.5836300</span>
+<span class="co">#&gt; 4   Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis -0.6340191</span>
+<span class="co">#&gt; 5            Baden-Württemberg – Karlsruhe – Freudenstadt  0.2282563</span>
+
+<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">5</span>))[<span class="dv">153</span><span class="op">:</span><span class="dv">157</span>,] <span class="co"># and slope</span>
+<span class="co">#&gt;     grpvar    term                                                     grp</span>
+<span class="co">#&gt; 153 county sexmale Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald</span>
+<span class="co">#&gt; 154 county sexmale                 Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="co">#&gt; 155 county sexmale                 Baden-Württemberg – Freiburg – Rottweil</span>
+<span class="co">#&gt; 156 county sexmale   Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis</span>
+<span class="co">#&gt; 157 county sexmale            Baden-Württemberg – Karlsruhe – Freudenstadt</span>
+<span class="co">#&gt;           condval</span>
+<span class="co">#&gt; 153  0.0353725725</span>
+<span class="co">#&gt; 154 -0.1010311991</span>
+<span class="co">#&gt; 155 -0.0465959749</span>
+<span class="co">#&gt; 156 -0.0132586526</span>
+<span class="co">#&gt; 157  0.0006543996</span></code></pre></div>
+<p>Via the <code>coef()</code> function you can get group-level coefficients, which are, however, easily obtained by adding the group-level deviations to the global intercept.</p>
+<p>In class, We will now practice the interpretation of some of the models we have estimated. For this, we will proceed by thinking of multilevel modeling as a predictive tool using descriptive terminology as illustrated <a href="https://statmodeling.stat.columbia.edu/2009/03/02/describing_desc/">here</a> and <a href="https://statmodeling.stat.columbia.edu/2017/03/07/descriptive-analysis-using-regression-models/">here</a> to train ourselves in summarizing regression fits in a way that conveys what the regression actually says, instead of what we would like it to say.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(lm_<span class="dv">2</span>)
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 4782</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8425 -0.6065  0.0756  0.6337  2.4792 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county   (Intercept) 0.3496   0.5913  </span>
+<span class="co">#&gt;  Residual             0.6457   0.8036  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county, 152</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.02169    0.05570  -0.390</span>
+<span class="co">#&gt; sexmale      0.04505    0.03877   1.162</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.335</span>
+
+<span class="kw">head</span>(<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">2</span>))) 
+<span class="co">#&gt;   grpvar        term</span>
+<span class="co">#&gt; 1 county (Intercept)</span>
+<span class="co">#&gt; 2 county (Intercept)</span>
+<span class="co">#&gt; 3 county (Intercept)</span>
+<span class="co">#&gt; 4 county (Intercept)</span>
+<span class="co">#&gt; 5 county (Intercept)</span>
+<span class="co">#&gt; 6 county (Intercept)</span>
+<span class="co">#&gt;                                                       grp    condval</span>
+<span class="co">#&gt; 1 Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald -0.9432837</span>
+<span class="co">#&gt; 2                 Baden-Württemberg – Freiburg – Konstanz -0.3384879</span>
+<span class="co">#&gt; 3                 Baden-Württemberg – Freiburg – Rottweil -0.6893775</span>
+<span class="co">#&gt; 4   Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis -0.7896226</span>
+<span class="co">#&gt; 5            Baden-Württemberg – Karlsruhe – Freudenstadt  0.1493607</span>
+<span class="co">#&gt; 6   Baden-Württemberg – Karlsruhe – Karlsruhe, Stadtkreis  0.6062714</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(lm_<span class="dv">3</span>)
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + (1 | state/county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 4774.2</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8437 -0.6089  0.0591  0.6348  2.4586 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups       Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county:state (Intercept) 0.30078  0.5484  </span>
+<span class="co">#&gt;  state        (Intercept) 0.05089  0.2256  </span>
+<span class="co">#&gt;  Residual                 0.64570  0.8036  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county:state, 152; state, 15</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept) -0.01903    0.08366  -0.228</span>
+<span class="co">#&gt; sexmale      0.04347    0.03875   1.122</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;         (Intr)</span>
+<span class="co">#&gt; sexmale -0.225</span>
+
+<span class="kw">head</span>(<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">3</span>)))
+<span class="co">#&gt;         grpvar        term</span>
+<span class="co">#&gt; 1 county:state (Intercept)</span>
+<span class="co">#&gt; 2 county:state (Intercept)</span>
+<span class="co">#&gt; 3 county:state (Intercept)</span>
+<span class="co">#&gt; 4 county:state (Intercept)</span>
+<span class="co">#&gt; 5 county:state (Intercept)</span>
+<span class="co">#&gt; 6 county:state (Intercept)</span>
+<span class="co">#&gt;                                                                         grp</span>
+<span class="co">#&gt; 1 Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald:Baden-Württemberg</span>
+<span class="co">#&gt; 2                 Baden-Württemberg – Freiburg – Konstanz:Baden-Württemberg</span>
+<span class="co">#&gt; 3                 Baden-Württemberg – Freiburg – Rottweil:Baden-Württemberg</span>
+<span class="co">#&gt; 4   Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis:Baden-Württemberg</span>
+<span class="co">#&gt; 5            Baden-Württemberg – Karlsruhe – Freudenstadt:Baden-Württemberg</span>
+<span class="co">#&gt; 6   Baden-Württemberg – Karlsruhe – Karlsruhe, Stadtkreis:Baden-Württemberg</span>
+<span class="co">#&gt;      condval</span>
+<span class="co">#&gt; 1 -0.7572847</span>
+<span class="co">#&gt; 2 -0.1592131</span>
+<span class="co">#&gt; 3 -0.5217563</span>
+<span class="co">#&gt; 4 -0.6065996</span>
+<span class="co">#&gt; 5  0.2779274</span>
+<span class="co">#&gt; 6  0.7404308</span>
+
+<span class="kw">data.frame</span>(<span class="kw">ranef</span>(lm_<span class="dv">3</span>))[<span class="dv">153</span><span class="op">:</span><span class="dv">167</span>,]
+<span class="co">#&gt;     grpvar        term                    grp      condval</span>
+<span class="co">#&gt; 153  state (Intercept)      Baden-Württemberg -0.194748522</span>
+<span class="co">#&gt; 154  state (Intercept)                 Bayern  0.329353368</span>
+<span class="co">#&gt; 155  state (Intercept)                 Berlin  0.053331953</span>
+<span class="co">#&gt; 156  state (Intercept)            Brandenburg  0.036318599</span>
+<span class="co">#&gt; 157  state (Intercept)                 Bremen  0.161797200</span>
+<span class="co">#&gt; 158  state (Intercept)                Hamburg -0.003385698</span>
+<span class="co">#&gt; 159  state (Intercept)                 Hessen -0.189311583</span>
+<span class="co">#&gt; 160  state (Intercept) Mecklenburg-Vorpommern -0.079541185</span>
+<span class="co">#&gt; 161  state (Intercept)          Niedersachsen -0.158378704</span>
+<span class="co">#&gt; 162  state (Intercept)    Nordrhein-Westfalen -0.199090871</span>
+<span class="co">#&gt; 163  state (Intercept)        Rheinland-Pfalz -0.116556657</span>
+<span class="co">#&gt; 164  state (Intercept)                Sachsen  0.127628863</span>
+<span class="co">#&gt; 165  state (Intercept)         Sachsen-Anhalt  0.199004476</span>
+<span class="co">#&gt; 166  state (Intercept)     Schleswig-Holstein  0.070144386</span>
+<span class="co">#&gt; 167  state (Intercept)              Thüringen -0.036565624</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(lm_<span class="dv">4</span>)
+<span class="co">#&gt; Linear mixed model fit by REML ['lmerMod']</span>
+<span class="co">#&gt; Formula: xenopho ~ sex + foreignq + foreignq2 + (1 | state/county)</span>
+<span class="co">#&gt;    Data: xenodat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; REML criterion at convergence: 4762.6</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -3.8376 -0.6094  0.0651  0.6339  2.4636 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups       Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  county:state (Intercept) 0.30486  0.5521  </span>
+<span class="co">#&gt;  state        (Intercept) 0.04059  0.2015  </span>
+<span class="co">#&gt;  Residual                 0.64567  0.8035  </span>
+<span class="co">#&gt; Number of obs: 1868, groups:  county:state, 152; state, 15</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error t value</span>
+<span class="co">#&gt; (Intercept)  0.13613    0.13820   0.985</span>
+<span class="co">#&gt; sexmale      0.04286    0.03876   1.106</span>
+<span class="co">#&gt; foreignq    -4.18243    3.53561  -1.183</span>
+<span class="co">#&gt; foreignq2   13.87314   16.64103   0.834</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;           (Intr) sexmal forgnq</span>
+<span class="co">#&gt; sexmale   -0.144              </span>
+<span class="co">#&gt; foreignq  -0.787  0.006       </span>
+<span class="co">#&gt; foreignq2  0.664 -0.001 -0.943</span></code></pre></div>
+<p>To arrive at predictions for xenophobic tendencies of individuals in specific counties and with specific values at individual and group-level predictors, we can replicate the linear predictor accordingly. Recall that the outcome variable is centered at 0:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## predictions based on a model with the intercept varying by county and a person's sex as individual level predictor
+
+<span class="co"># predicted xenophobic tendency for a female individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>,]
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3601806</span>
+
+<span class="co"># predicted xenophobic tendency for a male individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3151263</span>
+
+<span class="co"># predicted xenophobic tendency for a female individual in the county Sachsen – Chemnitz – Chemnitz, Kreisfreie Stadt</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">115</span>,]
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5669835</span>
+
+<span class="co"># predicted xenophobic tendency for a male individual in the county Sachsen – Chemnitz – Chemnitz, Kreisfreie Stadt</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">115</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.6120378</span>
+
+<span class="co"># predicted xenophobic tendency for a female individual in the county Bremen – Bremerhaven, Kreisfreie Stadt</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">41</span>,]
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;    1.163925</span>
+
+<span class="co"># predicted xenophobic tendency for a male individual in the county Bremen – Bremerhaven, Kreisfreie Stadt</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">41</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;    1.208979</span>
+
+
+## predictions based on a model with the intercept varying by counties nested in states, a person's sex as individual level predictor and the quota and squared quota of foreigners as group-level predictor at the county level.
+
+<span class="co"># predicted xenophobic tendency for a male individual in the county Baden-Württemberg – Freiburg – Konstanz nested in the state Baden-Württemberg</span>
+<span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>county[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>state[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.10284897</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq2&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.010577911</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3350269</span>
+
+<span class="co"># the same but this time we increase the quota of foreigners:</span>
+<span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>county[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>state[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.15</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq2&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.15</span><span class="op">^</span><span class="dv">2</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3668359</span>
+
+<span class="co"># the same but this time we increase the quota of foreigners further:</span>
+<span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>county[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>state[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.25</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq2&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.25</span><span class="op">^</span><span class="dv">2</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.2301532</span>
+
+<span class="co"># and one more time with the quota of foreigners increased even further:</span>
+<span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>county[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">4</span>)<span class="op">$</span>state[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.35</span> <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">4</span>)[<span class="st">&quot;foreignq2&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.35</span><span class="op">^</span><span class="dv">2</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.1839922</span></code></pre></div>
+<p>These examples are interesting and useful to explore and understand the fitted model. Usually we are interested in predictions that summarize the model in a more comprehensive fashion, though, i.e., a population-averaged interpretation of estimates, that is, estimates of the average outcome in the population given specific levels of input variables as opposed to predictions for very specific observations. Further, we also want to convey the uncertainty of our model-based inferences. As concerns the latter, we can obtain confidence intervals for parameter estimates using the <code>confint.merMod()</code> function and the <code>predict.merMod()</code> function to obtain confidence intervals on specific predictions. Note that methods that rely on asymptotic normality for the computation of p-values and confidence intervals can by misleading in the case of multilevel modeling. A recent journal article by Martin Elff, Jan Heisig, Merlin Schaeffer, and Susumu Shikano shows in detail (with R, in the appendix) how to obtain accurate intervals for estimates obtained from multilevel models using a heavier-tailed t-distribution with limited degrees of freedom, approximated using the m−l−1 rule or the Satterthwaite method.</p>
+<p>We will learn how to obtain and communicate population-averaged predictions and their uncertainty in the session on ‘presenting results of multilevel models’ using simulation (or informal Bayesian inference).</p>
+</div>
+<div id="further-reading" class="section level2">
+<h2>Further reading</h2>
+<ul>
+<li>Elff, Martin. 2019. iimm. Improved inference for multilevel models with few clusters using a t-distribution. [R package] (<a href="https://github.com/melff/iimm" class="uri">https://github.com/melff/iimm</a>).</li>
+<li>Elff, Martin, Jan Heisig, Merlin Schaeffer, and Susumu Shikano. Forthcoming. Multilevel analysis with few clusters. Improving likelihood-based methods to provide unbiased estimates and Accurate Inference. British Journal of Political Science.</li>
+<li>Gelman, Andrew and Jennifer Hill. 2007. Data analysis using regression and multilevel/hierarchical models. Cambridge: Cambridge University Press.</li>
+<li>Hartig, Florian. 2019. DHARMa. Residual diagnostics for hierarchical models. <a href="https://github.com/florianhartig/DHARMa">R package</a>.</li>
+<li>Knowles, Jared and Carl Frederick. 2019. merTools: Convenience functions for working with merMod objects from lme4. <a href="https://github.com/jknowles/merTools">R package</a>.</li>
+<li>Kuznetsova, Alexandra, Per Brockhoff and Rune Christensen. 2019. lmerTest. Tests in linear mixed effects models. <a href="https://github.com/runehaubo/lmerTestR">R package</a>.</li>
+</ul>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

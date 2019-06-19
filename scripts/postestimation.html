@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Postestimation for Multilevel Modeling in R</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Postestimation for Multilevel Modeling in R</h1>
+
+
+
+<div id="multilevel-modeling-summer-2019-sascha-gobel-and-susumu-shikano" class="section level5">
+<h5>Multilevel Modeling – Summer 2019 – Sascha Göbel and Susumu Shikano</h5>
+<p><strong>Content</strong></p>
+<ol style="list-style-type: decimal">
+<li>Quantifying uncertainty</li>
+<li>Population-averaged predictions</li>
+<li>Further reading</li>
+</ol>
+</div>
+<div id="quantifying-uncertainty" class="section level2">
+<h2>1. Quantifying uncertainty</h2>
+<p>In the sessions on frequentist and Bayesian multilevel modeling we already touched upon the topic of extracting quantities of substantive interest from fitted models. We learned how to obtain simple estimates of the outcome for specific observations in the data by evaluating the (transformed) linear predictor, i.e., generating expected values. This is useful to explore and understand the fitted model. However, thus far we have not taken full advantage of the information provided by the fitted model to quantify the uncertainty surrounding our estimates. Similarly, we have not leveraged all available information in the data to produce inferences about the sample/population instead of very specific observations. We begin with quantifying the uncertainty of estimates.</p>
+<div id="required-packages" class="section level5">
+<h5>Required packages</h5>
+<p>For postestimation we mostly rely on packages already introduced in previous sessions. For frequentist models we make heavy use of the <code>arm</code> package, accompanying the book by Gelman and Hill (2007). In addition, we require the <code>foreach</code>, <code>doParallel</code>, <code>data.table</code>, and <code>purrr</code> packages to speed up some iterative computations and make them more succinct. To install these packages, execute:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">&quot;arm&quot;</span>, <span class="st">&quot;foreach&quot;</span>, <span class="st">&quot;doParallel&quot;</span>, <span class="st">&quot;data.table&quot;</span>, <span class="st">&quot;purrr&quot;</span>)</code></pre></div>
+<p>warnings() Attach all packages:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)
+<span class="kw">library</span>(rstan)
+<span class="kw">library</span>(arm)
+<span class="kw">library</span>(foreach)
+<span class="kw">library</span>(doParallel)
+<span class="kw">library</span>(data.table)
+<span class="kw">library</span>(purrr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(dplyr)</code></pre></div>
+</div>
+<div id="getting-the-data" class="section level5">
+<h5>Getting the data</h5>
+<p>We use the same data as in “Frequentist Multilevel Modeling in R I and II”. To access the data in R, first specify your working directory via <code>setwd()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setwd</span>(<span class="st">&quot;FILE/PATH/TO/YOUR/DIRECTORY&quot;</span>)</code></pre></div>
+<p>and then import the data via <code>readRDS</code> (assuming the data is in your working directory, adjust file path if necessary):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xenodat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;xenodat.rds&quot;</span>)
+voterdat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;voterdat.rds&quot;</span>)</code></pre></div>
+</div>
+<div id="simulating-the-sampling-distribution-of-estimated-parameters" class="section level5">
+<h5>Simulating the sampling distribution of estimated parameters</h5>
+<p>To obtain both an expected value and an interval quantifying the estimation uncertainty from fitted frequentist multilevel models, we use the technique of statistical simulation. The gist of this approach is that we use it to simulate a sampling distribution or posterior of estimated parameters. Evaluating the (transformed) linear predictor for each draw of parameters then allows to quantify estimation uncertainty via quantiles of the resulting distribution of expected values. The mean of such a distribution yields a single expected value or point estimate.</p>
+<p>The basic intuition behind statistical simulation entails to set up a multivariate normal distribution with location according to the vector of coefficients from the fitted model and the scale set to the model’s covariance matrix. Drawing from this distribution repeatedly allows to simulate a distribution of each parameter estimated by the model. For hierarchical models, this process is more complicated but the general idea remains similar. In R we can obtain such a sampling distribution of estimated parameters from multilevel models using the <code>sim()</code> function from the <code>arm</code> package.</p>
+<p>Recall the following model from “Frequentist Multilevel Modeling in R I”:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{j} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(y_i\)</span> is a persons’s xenophobic tendency (mean centered, positive values indicate above average and negative values below average xenophobic tendencies), <span class="math inline">\(\mu\)</span> is the population intercept, <span class="math inline">\(\alpha_{j}\)</span> is a varying-intercept at the county level <span class="math inline">\(J\)</span>, <span class="math inline">\(\beta\)</span> represents the slope of <span class="math inline">\(x_i\)</span>, a person’s sex, which does not vary by county, and <span class="math inline">\(\sigma^2_y\)</span> is the within-county/residual variance. The distribution for the county-level model is centered at 0 with <span class="math inline">\(\sigma^2_\alpha\)</span> denoting the between-county/group-level variance.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>county),
+             <span class="dt">data =</span> xenodat,
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)
+<span class="co">#&gt; Warning: 'rBind' is deprecated.</span>
+<span class="co">#&gt;  Since R version 3.2.0, base's rbind() should work fine with S4 objects</span></code></pre></div>
+<p>Posterior simulations of parameters estimated by this model are generated by feeding this model into the <code>sim()</code> function and specifying the number of independent simulation draws via the <code>n.sims</code> argument:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sims_lm_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">sim</span>(<span class="dt">object =</span> lm_<span class="dv">2</span>, <span class="dt">n.sims =</span> <span class="dv">1000</span>)</code></pre></div>
+<p>Let’s have a look at the structure of the object storing the simulated sampling distributions.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glimpse</span>(sims_lm_<span class="dv">2</span>)
+<span class="co">#&gt; Formal class 'sim.merMod' [package &quot;arm&quot;] with 3 slots</span>
+<span class="co">#&gt;   ..@ fixef: num [1:1000, 1:2] -0.029 0.0285 -0.0918 -0.0177 -0.1194 ...</span>
+<span class="co">#&gt;   .. ..- attr(*, &quot;dimnames&quot;)=List of 2</span>
+<span class="co">#&gt;   ..@ ranef:List of 1</span>
+<span class="co">#&gt;   .. ..$ county: num [1:1000, 1:152, 1] -0.841 -1.057 -0.818 -0.807 -0.957 ...</span>
+<span class="co">#&gt;   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 3</span>
+<span class="co">#&gt;   ..@ sigma: num [1:1000] 0.808 0.805 0.792 0.795 0.788 ...</span></code></pre></div>
+<p>The object of class <code>sim.merMod</code> holds 3 slots:</p>
+<ul>
+<li><code>@fixef</code>, which stores a matrix of posterior simulations of the global intercept, individual- and group-level predictors.</li>
+<li><code>@ranef</code>, which stores separate three-dimensional arrays of posterior simulations for each of the varying-intercept and -slope parameter sets.</li>
+<li><code>@sigma</code>, which stores a matrix of posterior simulations of residual variance parameters, this returns 1’s or the square root of the overdispersion parameter for glm’s</li>
+</ul>
+<p>For each of these matrices columns represent the estimated parameters and rows the posterior draws. The array in <code>@ranef</code> holds an additional dimension to separate varying-intercepts from varying-slopes. The object also returns the original labels of the groups in <code>@ranef</code>. We now extract these components into separate matrices and adjust them a bit in preparation for generating population-averaged predictions below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract simulations of mu and beta</span>
+fixed_coefs &lt;-<span class="st"> </span>sims_lm_<span class="dv">2</span><span class="op">@</span>fixef
+
+<span class="co"># extract simulations of alpha_j, varying intercepts for counties</span>
+county_intercepts &lt;-<span class="st"> </span>sims_lm_<span class="dv">2</span><span class="op">@</span>ranef<span class="op">$</span>county[,,<span class="dv">1</span>] <span class="co"># 2 instead of 1 would denote varying slopes</span>
+
+<span class="co"># rename columns of fixed_coefs to match original names in the data and add the baseline for the female category == 0</span>
+<span class="kw">colnames</span>(fixed_coefs)[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;male&quot;</span>)
+fixed_coefs &lt;-<span class="st"> </span><span class="kw">cbind</span>(fixed_coefs, <span class="dt">female =</span> <span class="dv">0</span>)
+
+<span class="co"># rename columns of county_intercepts to match original names in the data</span>
+<span class="kw">colnames</span>(county_intercepts) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(sims_lm_<span class="dv">2</span><span class="op">@</span>ranef<span class="op">$</span>county)[[<span class="dv">2</span>]]
+
+<span class="co"># inspect the matrices</span>
+fixed_coefs[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,]
+<span class="co">#&gt;                mu       male female</span>
+<span class="co">#&gt;  [1,] -0.02904946 0.09223020      0</span>
+<span class="co">#&gt;  [2,]  0.02847972 0.06668795      0</span>
+<span class="co">#&gt;  [3,] -0.09183165 0.10194583      0</span>
+<span class="co">#&gt;  [4,] -0.01774132 0.05667946      0</span>
+<span class="co">#&gt;  [5,] -0.11944997 0.07213750      0</span>
+<span class="co">#&gt;  [6,] -0.08186847 0.06215808      0</span>
+<span class="co">#&gt;  [7,]  0.11580584 0.02425481      0</span>
+<span class="co">#&gt;  [8,]  0.03882145 0.05022929      0</span>
+<span class="co">#&gt;  [9,] -0.01097239 0.13542410      0</span>
+<span class="co">#&gt; [10,]  0.01034210 0.06213022      0</span>
+county_intercepts[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]
+<span class="co">#&gt;       Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald</span>
+<span class="co">#&gt;  [1,]                                              -0.8406868</span>
+<span class="co">#&gt;  [2,]                                              -1.0570203</span>
+<span class="co">#&gt;  [3,]                                              -0.8177476</span>
+<span class="co">#&gt;  [4,]                                              -0.8072505</span>
+<span class="co">#&gt;  [5,]                                              -0.9569152</span>
+<span class="co">#&gt;  [6,]                                              -0.9083100</span>
+<span class="co">#&gt;  [7,]                                              -0.7978701</span>
+<span class="co">#&gt;  [8,]                                              -0.7257299</span>
+<span class="co">#&gt;  [9,]                                              -0.9213720</span>
+<span class="co">#&gt; [10,]                                              -1.0733490</span>
+<span class="co">#&gt;       Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="co">#&gt;  [1,]                              0.01851758</span>
+<span class="co">#&gt;  [2,]                             -0.30229393</span>
+<span class="co">#&gt;  [3,]                             -0.21787069</span>
+<span class="co">#&gt;  [4,]                             -0.44187612</span>
+<span class="co">#&gt;  [5,]                             -0.03395348</span>
+<span class="co">#&gt;  [6,]                             -0.27138711</span>
+<span class="co">#&gt;  [7,]                             -0.61206933</span>
+<span class="co">#&gt;  [8,]                             -0.26902137</span>
+<span class="co">#&gt;  [9,]                             -0.12078939</span>
+<span class="co">#&gt; [10,]                             -0.69296342</span></code></pre></div>
+<p>The variability of the parameter values across different rows directly reflects the estimation uncertainty of the estimates. We can summarize this uncertainty examining the quantiles of the sampling distributions.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># point estimate for individual-level predictor sex (male vs. female)</span>
+<span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.5</span>)
+<span class="co">#&gt;        50% </span>
+<span class="co">#&gt; 0.04508828</span>
+
+<span class="co"># compare to coefficient from model</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)
+<span class="co">#&gt; (Intercept)     sexmale </span>
+<span class="co">#&gt; -0.02169269  0.04505428</span>
+
+<span class="co"># 95% confidence interval for individual-level predictor sex</span>
+<span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
+<span class="co">#&gt;        2.5% </span>
+<span class="co">#&gt; -0.03147081</span>
+<span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
+<span class="co">#&gt;     97.5% </span>
+<span class="co">#&gt; 0.1185391</span>
+
+<span class="co"># point estimate for varying-intercept of county Konstanz</span>
+<span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.5</span>)
+<span class="co">#&gt;        50% </span>
+<span class="co">#&gt; -0.3349909</span>
+
+<span class="co"># compare to coefficient from model</span>
+<span class="kw">head</span>(<span class="kw">ranef</span>(lm_<span class="dv">2</span>)<span class="op">$</span>county, <span class="dv">2</span>)
+<span class="co">#&gt;                                                         (Intercept)</span>
+<span class="co">#&gt; Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald  -0.9432837</span>
+<span class="co">#&gt; Baden-Württemberg – Freiburg – Konstanz                  -0.3384879</span>
+
+<span class="co"># 95% confidence interval for varying-intercept of county Konstanz</span>
+<span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
+<span class="co">#&gt;       2.5% </span>
+<span class="co">#&gt; -0.6775334</span>
+<span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
+<span class="co">#&gt;      97.5% </span>
+<span class="co">#&gt; -0.0233456</span></code></pre></div>
+<p>Now suppose we want to use this to generate confidence intervals for some expected values of specific observations generated in ‘Frequentist Multilevel Modeling I’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># predicted xenophobic tendency for a female individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="co"># point estimate generated by evaluating the linear predictor from the model</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>,]
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3601806</span>
+<span class="co"># expected values generated by evaluating the linear predictor from draws of posterior simulations</span>
+linpred_sims_<span class="dv">1</span> &lt;-<span class="st"> </span>fixed_coefs[,<span class="st">&quot;mu&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">                  </span>county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]] <span class="op">+</span>
+<span class="st">                  </span>fixed_coefs[,<span class="st">&quot;female&quot;</span>] <span class="co"># or fixed_coefs[,&quot;male&quot;] * 0</span>
+<span class="co"># point estimate</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.5</span>)
+<span class="co">#&gt;        50% </span>
+<span class="co">#&gt; -0.3580027</span>
+<span class="co"># 95% confidence intervals</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
+<span class="co">#&gt;       2.5% </span>
+<span class="co">#&gt; -0.6811056</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
+<span class="co">#&gt;       97.5% </span>
+<span class="co">#&gt; -0.04431807</span>
+
+<span class="co"># predicted xenophobic tendency for a male individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
+<span class="co"># expected value generated by evaluating the linear predictor from the model</span>
+<span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="kw">ranef</span>(lm_<span class="dv">2</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="kw">fixef</span>(lm_<span class="dv">2</span>)[<span class="st">&quot;sexmale&quot;</span>]<span class="op">*</span><span class="dv">1</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.3151263</span>
+<span class="co"># expected values generated by evaluating the linear predictor from draws of posterior simulations</span>
+linpred_sims_<span class="dv">2</span> &lt;-<span class="st"> </span>fixed_coefs[,<span class="st">&quot;mu&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">                  </span>county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]] <span class="op">+</span>
+<span class="st">                  </span>fixed_coefs[,<span class="st">&quot;male&quot;</span>] <span class="co"># or fixed_coefs[,&quot;female&quot;] * 1</span>
+
+<span class="co"># point estimate</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.5</span>)
+<span class="co">#&gt;        50% </span>
+<span class="co">#&gt; -0.3115301</span>
+<span class="co"># 95% confidence intervals</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
+<span class="co">#&gt;      2.5% </span>
+<span class="co">#&gt; -0.639623</span>
+<span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
+<span class="co">#&gt;        97.5% </span>
+<span class="co">#&gt; -0.002598073</span></code></pre></div>
+<p>For Bayesian models all this is even easier, since we do not need to simulate sampling distributions of parameter values. As shown in “Bayesian Multilevel Models in R”, the fitted model automatically returns posterior distributions of estimated parameters. Generating Bayesian credible intervals around expected values of specific observations is then just the same as depicted for frequentist multilevel models above.</p>
+</div>
+</div>
+<div id="population-averaged-predictions" class="section level2">
+<h2>2. Population-averaged predictions</h2>
+<p>The next step is to make use of all information in the data and summarize estimates in such away that they allow for inferences about the population of interest instead of very specific observations. There are two general approaches to achieve this.</p>
+<p>The first evaluates the linear predictor for one case that represents the sample. In order to construct such a case, values of the covariates which are not of immediate interest as regards inference are set to their sample means. This procedure incorporates serious limitations. It restricts inferences to the average case (which might be nonexistent) instead of yielding an average estimate in the population, for categorical variables taking a mean is rather illogical, and it tends to overstate the magnitude of estimates. More importantly for multilevel models we have to pick a specific varying-intercept and -slope, but which group represents the average case?</p>
+<p>The second approach comes without these limitations. Here, other covariates assume the values that are observed for each case in the sample. The linear predictor is hence evaluated for each observation and the average of the generated expected values over all cases yields a population-averaged prediction. This approach is known as average marginal/partial effects, observed-value approach, or average predictive comparisons.</p>
+<p>Note that when doing multilevel modeling with poststratification, the linear predictor is only evaluated for unique combinations of values in the data, i.e., poststratification cells. The generated expected values are finally weighted according to the cells’ proportions in the population using for instance census data.</p>
+<div id="illustrating-the-procedure" class="section level5">
+<h5>Illustrating the procedure</h5>
+<p>We illustrate the prefered second approach with the posterior simulations <code>fixed_coefs</code> and <code>county_intercepts</code> from the model above. The workflow is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Set up the data for which population-averaged predictions shall be obtained.</li>
+<li>Evaluate the linear predictor for each observation in the data using parameter values from one common draw of the simulated sampling distribution of estimated parameters.</li>
+<li>Average the generated expected values over all cases in the data and store the result in a vector.</li>
+<li>Repeat steps 1 to 3 for the remaining parameter draws.</li>
+</ol>
+<p>This yields population-averaged predictions and their uncertainty.</p>
+<p>The tricky part is the first step, where we have to arrange the data in a format that allows the linear predictor to index and extract the relevant value of a parameter for each observation in the data. For instance, a male person should get the parameter 0.031 whereas a female person should get 0. Similarly a person from Konstanz should get the parameter -0.36 whereas a person from Regensburg should get 1.42. To make this feasible, we have arranged and renamed the columns as in <code>fixed_coefs</code> and <code>county_intercepts</code> above to match the data. We fix the ‘sex’ variable at ‘male’ here, so this gives us the average xenophobic tendency of males in the population.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Step 2 for first parameter draw</span>
+expected_values &lt;-<span class="st"> </span>fixed_coefs[<span class="dv">1</span>, <span class="st">&quot;mu&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># extract intercept, (scalar)</span>
+<span class="st">                   </span>fixed_coefs[<span class="dv">1</span>, <span class="st">&quot;male&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># extract parameter for each observation's sex (vector)</span>
+<span class="st">                   </span>county_intercepts[<span class="dv">1</span>, <span class="kw">as.character</span>(xenodat<span class="op">$</span>county)] <span class="co"># extract relevant parameter for each observation's county</span>
+
+<span class="co"># step 3 for first parameter draw</span>
+average_pred &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dt">times =</span> <span class="kw">nrow</span>(fixed_coefs)) <span class="co"># set up vector for storage</span>
+average_pred[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">mean</span>(expected_values) <span class="co"># average over cases</span>
+average_pred[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>]
+<span class="co">#&gt;  [1] 0.06064891         NA         NA         NA         NA         NA</span>
+<span class="co">#&gt;  [7]         NA         NA         NA         NA</span></code></pre></div>
+<p>Now we could embedd this in a loop and iterate over the 1 to n draws to fill up the remaining NAs. But this would not be very efficient as it is very slow for complex models and large datasets and tedious to construct with a new problem at hand. So to make things a little bit easier and faster we next introduce a custom R function to obtain population-averaged predictions using the illustrated logic.</p>
+</div>
+<div id="a-custom-r-function-to-obtain-population-averaged-predictions" class="section level5">
+<h5>A custom R function to obtain population-averaged predictions</h5>
+<p>We source the function from the ‘mlAMEs.R’ script, which stands for ‘multilevel average marginal effects’.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;mlAMEs.R&quot;</span>)</code></pre></div>
+<p>The function takes the following arguments:</p>
+<ul>
+<li>the <code>data</code> argument takes a matrix or data.frame with variables that are indexed when evaluating the linear predictor to assign the relevant value of a parameter for each observation in the data. This can but must not include variables fixed at specific values. The exact specification depends on the specification of the linear predictor.</li>
+<li>the <code>levels</code> argument specifies the steps or changes along a specific covariate for which predictions shall be obtained. This must be a named list including at least one vector named ‘x’, which appears in the linear predictor and sets changes of interest at the scale of the respective covariate. This can also be used to introduce dummy vectors of covariate values in the data for a different specification of the linear predictor.</li>
+<li>the <code>draws</code> argument takes a numeric specifying the number of draws set to obtain the posterior (simulations).</li>
+<li>the <code>posterior</code> argument takes a named list of vectors or matrices/data.frames, each representing the (simulated) posterior of an estimated parameter. The names must allign with the specification of the linear predictor.</li>
+<li>the <code>linear_predictor</code> argument takes a character string describing the linear predictor. Parameters are named as specified in the named list passed to the <code>posterior</code> argument. Parameter draws are indexed with <code>n</code>, changes in x with <code>k</code>, data is indexed using the variable/column names in the matrix or data.frame passed to the <code>data</code> argument.</li>
+<li>the <code>type</code> argument takes one of <code>linear</code> or <code>logit</code>. For other generalized linear multilevel models the link function can be substituted within the <code>mlAMEs()</code> function. For more complex models other parts of the function have to be changed as well.</li>
+</ul>
+<p>Specifying all these arguments seems a lot of effort compared to the few lines of code shown before. There are also other convenience packages to obtain predictions for frequentist (<code>merTools</code>) and Bayesian (<code>tidybayes</code>) multilevel models. However, this function (1) standardizes the inputs across frequentist and Bayesian models and (2) optimizes for speed yielding huge gains over a common for loop. The latter is achieved via parallelization as well as full vectorization through the removal of redundancies by evaluating the linear predictor only for unique combinations of values in the data and then assigning the results back to respective observations. The function (3) automatically yields population-averaged predictions, which existing packages do not hence requiring additional programming effort. Existing packages also require to stack the data for each change in a covariate of interest. This can rapidly result in memory bottlenecks also for midsized datasets through blown up posterior predictions. <code>mlAMEs</code> (4) computes population-averaged predictions over the full range of a specified variable of interest in a convenient and memory efficient way. Another benefit is that it was originally developed for and works easily with <code>rstan</code>, whereas available packages are dependent on a cached formula, and hence work only with <code>lme4</code> and <code>rstanarm</code> which operate by specifying a classical R formula. Finally, specifying the data, posterior, and linear predictor in such a detailed fashion makes the procedure more intuitive to understand than the canned solutions and retains flexibility in the style of setting up the data and linear predictor.</p>
+<p>We start by setting up the data for the <code>data</code>, <code>levels</code>, and <code>posterior</code> arguments.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># since we fix persons's sex, we only need to pass the county variable</span>
+data &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(xenodat, county) 
+
+<span class="co"># set levels</span>
+levels &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">1</span>) <span class="co"># 0 is female, 1 is male</span>
+
+<span class="co"># assemble the sampling distribution of each estimated parameter in a named list</span>
+posteriors &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">mu =</span> fixed_coefs[,<span class="st">&quot;mu&quot;</span>],
+                   <span class="dt">beta_sex =</span> fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="co"># this is fixed</span>
+                   <span class="dt">alpha_county =</span> county_intercepts) <span class="co"># this is as observed</span>
+<span class="kw">glimpse</span>(posteriors)
+<span class="co">#&gt; List of 3</span>
+<span class="co">#&gt;  $ mu          : num [1:1000] -0.029 0.0285 -0.0918 -0.0177 -0.1194 ...</span>
+<span class="co">#&gt;  $ beta_sex    : num [1:1000] 0.0922 0.0667 0.1019 0.0567 0.0721 ...</span>
+<span class="co">#&gt;  $ alpha_county: num [1:1000, 1:152] -0.841 -1.057 -0.818 -0.807 -0.957 ...</span>
+<span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span>
+<span class="co">#&gt;   .. ..$ : NULL</span>
+<span class="co">#&gt;   .. ..$ : chr [1:152] &quot;Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald&quot; &quot;Baden-Württemberg – Freiburg – Konstanz&quot; &quot;Baden-Württemberg – Freiburg – Rottweil&quot; &quot;Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis&quot; ...</span></code></pre></div>
+<p>Next we specify the linear predictor. <code>mu</code>, <code>alpha_county</code>, and <code>beta_sex</code> are parameters that are extracted from the named list passed to the <code>posteriors</code> argument for each draw <code>n</code>. <code>county</code> comes from the data.frame passed to the <code>data</code> argument and is a vector of observation-specific county names. This indexes the respective column/parameter in the <code>alpha_county</code> matrix for all observations in the data. So <code>mu[n]</code> gives one value for this parameter draw and <code>alpha_county[n, county]</code> gives a vector of individual-specific varying intercepts, and so on. <code>x</code> takes the values 0/female for k = 1 and 1/male for the second step in x. The algorithm loops parallelized over k for for all 1 to n draws.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">linear_predictor &lt;-<span class="st"> &quot;mu[n] + alpha_county[n, county] + beta_sex[n] * x[k]&quot;</span></code></pre></div>
+<p>Finally, we apply the function and inspect the result.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># allow parallelization</span>
+<span class="kw">registerDoParallel</span>(<span class="dv">6</span>) 
+
+popavg_pred_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">mlAMEs</span>(<span class="dt">data =</span> data, 
+                        <span class="dt">levels =</span> levels,
+                        <span class="dt">draws =</span> <span class="dv">1000</span>, 
+                        <span class="dt">posterior =</span> posteriors, 
+                        <span class="dt">linear_predictor =</span> linear_predictor, 
+                        <span class="dt">type =</span> <span class="st">&quot;linear&quot;</span>)
+
+<span class="kw">glimpse</span>(popavg_pred_<span class="dv">1</span>)
+<span class="co">#&gt; Observations: 2,000</span>
+<span class="co">#&gt; Variables: 3</span>
+<span class="co">#&gt; $ draw &lt;fct&gt; V1, V1, V2, V2, V3, V3, V4, V4, V5, V5, V6, V6, V7, V7, V...</span>
+<span class="co">#&gt; $ y    &lt;dbl&gt; -3.158128e-02, 6.064891e-02, -4.036649e-02, 2.632146e-02,...</span>
+<span class="co">#&gt; $ x    &lt;int&gt; 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, ...</span>
+
+<span class="co"># point prediction and 95% confidence intervals for each level of x</span>
+popavg_pred_<span class="dv">1</span> <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(x) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">lower =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.025</span>),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.975</span>),
+            <span class="dt">fit =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.50</span>))
+<span class="co">#&gt; # A tibble: 2 x 4</span>
+<span class="co">#&gt;       x   lower  upper     fit</span>
+<span class="co">#&gt;   &lt;int&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt; 1     0 -0.0764 0.0326 -0.0219</span>
+<span class="co">#&gt; 2     1 -0.0314 0.0730  0.0229</span></code></pre></div>
+<p>This was not so hard. Now with a more complex example with counties nested in states and the quota and squared quota of foreigners as group-level predictors at the county level (previously lm_4).</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{jk} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{jk} \sim\)</span> N<span class="math inline">\((\gamma_k + \beta_1 u_j + \beta_2 u{_j^2}, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br>
+</p>
+<p>The difficulty here is that there is essentially an interaction of <span class="math inline">\(`u_j`\)</span> with itself, hence <span class="math inline">\(`u{_j^2}`\)</span>. So if we are interested in expected values across changes of <span class="math inline">\(`u_j`\)</span>, we have to take into account changes in <span class="math inline">\(`u{_j^2}`\)</span> as well. In <code>mlAMEs()</code> this is achieved by adding another variable to the <code>levels</code> argument which stores the changes in <span class="math inline">\(`u{_j^2}`\)</span> and index it with <code>k</code> as well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fit the model</span>
+lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="dt">formula =</span> xenopho <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>foreignq <span class="op">+</span><span class="st"> </span>foreignq2 <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>state<span class="op">/</span>county),
+             <span class="dt">data =</span> xenodat,
+             <span class="dt">REML =</span> <span class="ot">TRUE</span>)
+
+<span class="co"># simulate the sampling distribution of the parameters</span>
+sims_lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">sim</span>(<span class="dt">object =</span> lm_<span class="dv">4</span>, <span class="dt">n.sims =</span> <span class="dv">1000</span>)
+
+<span class="co"># extract simulations of mu and the betas</span>
+fixed_coefs &lt;-<span class="st"> </span>sims_lm_<span class="dv">4</span><span class="op">@</span>fixef
+
+<span class="co"># extract simulations of alpha_j and gamma_k</span>
+county_intercepts &lt;-<span class="st"> </span>sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>county[,,<span class="dv">1</span>]
+state_intercepts &lt;-<span class="st"> </span>sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>state[,,<span class="dv">1</span>]
+
+<span class="co"># rename columns of fixed_coefs to match original names in the data and add the baseline for the female category == 0</span>
+<span class="kw">colnames</span>(fixed_coefs)[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;male&quot;</span>)
+fixed_coefs &lt;-<span class="st"> </span><span class="kw">cbind</span>(fixed_coefs, <span class="dt">female =</span> <span class="dv">0</span>)
+
+<span class="co"># rename columns of county_intercepts to match original names in the data</span>
+<span class="kw">colnames</span>(county_intercepts) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>county)[[<span class="dv">2</span>]]
+<span class="kw">colnames</span>(state_intercepts) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>state)[[<span class="dv">2</span>]]
+
+<span class="co"># assemble data for data argument</span>
+data &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(xenodat, sex, county, state)
+
+<span class="co"># set_levels</span>
+levels &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="fl">0.25</span>, <span class="dt">length.out =</span> <span class="dv">20</span>),
+               <span class="dt">x_squared =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="fl">0.25</span>, <span class="dt">length.out =</span> <span class="dv">20</span>)<span class="op">^</span><span class="dv">2</span>)
+
+<span class="co"># assemble data for posterior argument</span>
+posteriors &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">mu =</span> fixed_coefs[, <span class="st">&quot;mu&quot;</span>],
+                   <span class="dt">beta_sex =</span> fixed_coefs[, <span class="kw">c</span>(<span class="st">&quot;male&quot;</span>, <span class="st">&quot;female&quot;</span>)], <span class="co"># this is fixed at different levels</span>
+                   <span class="dt">beta_foreignq =</span> fixed_coefs[, <span class="st">&quot;foreignq&quot;</span>],
+                   <span class="dt">beta_foreignq2 =</span> fixed_coefs[, <span class="st">&quot;foreignq2&quot;</span>],
+                   <span class="dt">alpha_county =</span> county_intercepts,
+                   <span class="dt">gamma_state =</span> state_intercepts)
+
+<span class="co"># prepare the linear predictor</span>
+linear_predictor &lt;-<span class="st"> &quot;mu[n] + alpha_county[n, county] + gamma_state[n, state] + </span>
+<span class="st">                     beta_sex[n, sex] + beta_foreignq[n] * x[k] + beta_foreignq2[n] * x_squared[k]&quot;</span>
+
+<span class="co"># apply mlAME() function</span>
+popavg_pred_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">mlAMEs</span>(<span class="dt">data =</span> data, 
+                        <span class="dt">levels =</span> levels, 
+                        <span class="dt">draws =</span> <span class="dv">1000</span>, 
+                        <span class="dt">posterior =</span> posteriors, 
+                        <span class="dt">linear_predictor =</span> linear_predictor, 
+                        <span class="dt">type =</span> <span class="st">&quot;linear&quot;</span>)
+
+<span class="kw">glimpse</span>(popavg_pred_<span class="dv">2</span>)
+<span class="co">#&gt; Observations: 20,000</span>
+<span class="co">#&gt; Variables: 3</span>
+<span class="co">#&gt; $ draw &lt;fct&gt; V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V...</span>
+<span class="co">#&gt; $ y    &lt;dbl&gt; 0.134625210, 0.087113076, 0.043571632, 0.004000879, -0.03...</span>
+<span class="co">#&gt; $ x    &lt;dbl&gt; 0.00000000, 0.01315789, 0.02631579, 0.03947368, 0.0526315...</span>
+
+<span class="co"># point prediction and 95% confidence intervals for each level of x</span>
+popavg_pred_<span class="dv">2</span> <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(x) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">lower =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.025</span>),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.975</span>),
+            <span class="dt">fit =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.50</span>))
+<span class="co">#&gt; # A tibble: 20 x 4</span>
+<span class="co">#&gt;         x   lower upper      fit</span>
+<span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 0      -0.106  0.408  0.144  </span>
+<span class="co">#&gt;  2 0.0132 -0.0829 0.276  0.0973 </span>
+<span class="co">#&gt;  3 0.0263 -0.0805 0.179  0.0519 </span>
+<span class="co">#&gt;  4 0.0395 -0.114  0.137  0.00758</span>
+<span class="co">#&gt;  5 0.0526 -0.161  0.126 -0.0285 </span>
+<span class="co">#&gt;  6 0.0658 -0.221  0.123 -0.0631 </span>
+<span class="co">#&gt;  7 0.0789 -0.284  0.122 -0.0889 </span>
+<span class="co">#&gt;  8 0.0921 -0.327  0.119 -0.111  </span>
+<span class="co">#&gt;  9 0.105  -0.365  0.117 -0.129  </span>
+<span class="co">#&gt; 10 0.118  -0.389  0.116 -0.143  </span>
+<span class="co">#&gt; 11 0.132  -0.413  0.112 -0.151  </span>
+<span class="co">#&gt; 12 0.145  -0.419  0.115 -0.157  </span>
+<span class="co">#&gt; 13 0.158  -0.431  0.130 -0.157  </span>
+<span class="co">#&gt; 14 0.171  -0.453  0.150 -0.152  </span>
+<span class="co">#&gt; 15 0.184  -0.476  0.198 -0.138  </span>
+<span class="co">#&gt; 16 0.197  -0.503  0.257 -0.130  </span>
+<span class="co">#&gt; 17 0.211  -0.556  0.364 -0.108  </span>
+<span class="co">#&gt; 18 0.224  -0.605  0.438 -0.0904 </span>
+<span class="co">#&gt; 19 0.237  -0.656  0.568 -0.0695 </span>
+<span class="co">#&gt; 20 0.25   -0.706  0.721 -0.0470</span></code></pre></div>
+<p>With a Bayesian model estimated via <code>rstan</code> this is even easier. We illustrate the full workflow with glm_3 from ‘Bayesian multilevel modeling in R’.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(l = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((0, \sigma^2_\zeta)\)</span> for <span class="math inline">\(m = 1, ..., M\)</span>
+</p>
+<p>where <span class="math inline">\(y_i\)</span> is turnout in the 2018 general election, <span class="math inline">\(\pi_i\)</span> is the probability to turnout, <span class="math inline">\(\mu\)</span> is the population intercept, <span class="math inline">\(\alpha_{j}\)</span>, <span class="math inline">\(\gamma_k, \delta_l,\)</span> and <span class="math inline">\(\zeta_m\)</span> are varying-intercepts at race, age, party, and congressional district groups respectively, <span class="math inline">\(\beta\)</span> represents the slope of <span class="math inline">\(x_i\)</span>, a person’s income, which does not vary by groups, and the <span class="math inline">\(\sigma\)</span>’s denote the group-level variances.</p>
+<p>We have estimated this model previously and will now just import the fitted model and transform the data in such a way as it was provided to <code>rstan</code> for modeling.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># format the data</span>
+<span class="co"># transform the factor variables &quot;race&quot;, &quot;age&quot;, &quot;party&quot;, &quot;congdist&quot; to integers, rstan does not accept factors</span>
+voterdat<span class="op">$</span>race_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>race)
+voterdat<span class="op">$</span>age_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>age)
+voterdat<span class="op">$</span>party_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>party)
+voterdat<span class="op">$</span>congdist_int &lt;-<span class="st"> </span><span class="kw">as.integer</span>(voterdat<span class="op">$</span>congdist)
+
+<span class="co"># arrange the data in order of the integer variables county_int and state_int</span>
+voterdat &lt;-<span class="st"> </span><span class="kw">arrange</span>(voterdat, race_int, age_int, party_int, congdist_int)
+
+<span class="co"># import the model</span>
+fit_ml_glm &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;fit_ml_glm&quot;</span>)</code></pre></div>
+<p>This leaves us were we stopped after fitting the model in ‘Bayesian multilevel modeling in R’. We next set up the data for the <code>data</code>, <code>levels</code>, and <code>posterior</code> arguments. We fix income at different levels.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># assemble data for the data argument</span>
+data &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(voterdat, race_int, age_int, party_int, congdist_int)
+
+<span class="co"># change the colnames in data to align them with the fitted model</span>
+<span class="kw">colnames</span>(data) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;race&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;party&quot;</span>, <span class="st">&quot;congdist&quot;</span>)
+
+<span class="co"># levels</span>
+levels &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">x =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="dv">26</span>, <span class="dt">length.out =</span> <span class="dv">20</span>))
+
+<span class="co"># select parameters of interest</span>
+parameters &lt;-<span class="st"> </span>fit_ml_glm<span class="op">@</span>model_pars[<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>] <span class="co"># mu, beta, alpha, gamma, delta, zeta</span>
+
+<span class="co"># assemble the posterior of each estimated parameter in a named list</span>
+posteriors &lt;-<span class="st"> </span>parameters <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>purrr<span class="op">::</span><span class="kw">map</span>(<span class="op">~</span>{
+    a &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit_ml_glm, <span class="dt">pars =</span> .x)
+  }) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">setNames</span>(parameters)</code></pre></div>
+<p>The linear predictor is easily specified by copying it from the stan file (“mu + alpha[race] + gamma[age] + delta[party] + zeta[congdist] + beta * x”) and making the necessary adjustments for indexing</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># prepare the linear predictor for mlAMEs()</span>
+linear_predictor &lt;-<span class="st"> &quot;mu[n] + alpha[n, race] + gamma[n, age] + delta[n, party] + </span>
+<span class="st">                     zeta[n, congdist] + beta[n] * x[k]&quot;</span></code></pre></div>
+<p>Since Stan does not take factors, race, age, party, and congdist in the data do not index the appropriate columns/parameters via column names but via column positions. mlAMEs() is now applied as before with frequentist multilevel models.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># apply mlAME() function</span>
+popavg_pred_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">mlAMEs</span>(<span class="dt">data =</span> data, 
+                        <span class="dt">levels =</span> levels, 
+                        <span class="dt">draws =</span> <span class="dv">4000</span>, 
+                        <span class="dt">posterior =</span> posteriors, 
+                        <span class="dt">linear_predictor =</span> linear_predictor,
+                        <span class="dt">type =</span> <span class="st">&quot;logit&quot;</span>)
+
+<span class="kw">glimpse</span>(popavg_pred_<span class="dv">3</span>)
+<span class="co">#&gt; Observations: 80,000</span>
+<span class="co">#&gt; Variables: 3</span>
+<span class="co">#&gt; $ draw &lt;fct&gt; V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V...</span>
+<span class="co">#&gt; $ y    &lt;dbl&gt; 0.5001422, 0.5208543, 0.5414779, 0.5619489, 0.5822056, 0....</span>
+<span class="co">#&gt; $ x    &lt;dbl&gt; 0.000000, 1.368421, 2.736842, 4.105263, 5.473684, 6.84210...</span>
+
+<span class="co"># point prediction and 80% credible intervals for each level of x</span>
+popavg_pred_<span class="dv">3</span> <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(x) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">lower =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.10</span>),
+            <span class="dt">upper =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.90</span>),
+            <span class="dt">fit =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.50</span>))
+<span class="co">#&gt; # A tibble: 20 x 4</span>
+<span class="co">#&gt;        x lower upper   fit</span>
+<span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt;  1  0    0.429 0.488 0.459</span>
+<span class="co">#&gt;  2  1.37 0.472 0.512 0.492</span>
+<span class="co">#&gt;  3  2.74 0.511 0.539 0.525</span>
+<span class="co">#&gt;  4  4.11 0.542 0.575 0.559</span>
+<span class="co">#&gt;  5  5.47 0.566 0.615 0.591</span>
+<span class="co">#&gt;  6  6.84 0.588 0.656 0.623</span>
+<span class="co">#&gt;  7  8.21 0.610 0.696 0.654</span>
+<span class="co">#&gt;  8  9.58 0.631 0.732 0.683</span>
+<span class="co">#&gt;  9 10.9  0.652 0.767 0.712</span>
+<span class="co">#&gt; 10 12.3  0.671 0.798 0.738</span>
+<span class="co">#&gt; 11 13.7  0.690 0.826 0.764</span>
+<span class="co">#&gt; 12 15.1  0.708 0.851 0.787</span>
+<span class="co">#&gt; 13 16.4  0.725 0.874 0.809</span>
+<span class="co">#&gt; 14 17.8  0.742 0.893 0.829</span>
+<span class="co">#&gt; 15 19.2  0.758 0.910 0.848</span>
+<span class="co">#&gt; 16 20.5  0.774 0.924 0.865</span>
+<span class="co">#&gt; 17 21.9  0.789 0.936 0.880</span>
+<span class="co">#&gt; 18 23.3  0.803 0.947 0.894</span>
+<span class="co">#&gt; 19 24.6  0.817 0.956 0.906</span>
+<span class="co">#&gt; 20 26    0.829 0.963 0.918</span></code></pre></div>
+<p>Thus far our population-averaged predictions do only cover estimation uncertainty. For additional predictive uncertainty we would have to incorporate the evaluation of the linear predictor in <code>mlAMEs()</code> inside the stochastic component of the model. For a linear model this means wrapping a normal distribution around the generated expected values and adding the posterior of residual variance parameters. For a logit model this means wrapping a binomial distribution around the generated probability values. I might add this to the function later.</p>
+<p>In the last session we will take this knowledge one step further and learn how to visualize and communicate these results.</p>
+</div>
+</div>
+<div id="further-reading" class="section level2">
+<h2>Further reading</h2>
+<ul>
+<li><a href="https://journals.sagepub.com/doi/abs/10.1111/j.1467-9531.2007.00181.x">Gelman, Andrew and Iain Pardoe. 2007. Average Predictive Comparisons for Models with Nonlinearity, Interactions, and Variance Components. Sociological Methodology, 37, 1.</a></li>
+<li>Gelman, Andrew and Jennifer Hill. 2007. Data analysis using regression and multilevel/hierarchical models. Cambridge: Cambridge University Press.</li>
+<li><a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1540-5907.2012.00602.x">Hanmer, Michael J. and Kerem O. Kalkan. 2013. Behind the Curve. Clarifying the Best Approach to Calculating Predicted Probabilities and Marginal Effects from Limited Dependent Variable Models. American Journal of Political Science, 57, 1</a></li>
+<li><a href="https://www.jstor.org/stable/pdf/2669316.pdf?refreqid=excelsior%3Adc5cc8978c78b96b952d29b6ba6a7a20">King, Gary, Michael Tomz, and Jason Wittenberg. 2000. Making the Most of Statistical Analyses. Improving Interpretation and Presentation. American Journal of Political Science, 44, 2.</a></li>
+<li>Knowles, Jared E. and Carl Frederick. 2019. merTools. Tools for Analyzing Mixed Effect Regression Models. <a href="https://github.com/jknowles/merTools">R package</a>.</li>
+<li>Kay, Matthew and Timothy Mastny. 2019. tidybayes. Tidy Data and ‘Geoms’ for Bayesian Models. <a href="https://github.com/mjskay/tidybayes">R package</a>.</li>
+</ul>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Frequentist Multilevel Modeling in R II</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Frequentist Multilevel Modeling in R II</h1>
+
+
+
+<div id="multilevel-modeling-summer-2019-sascha-gobel-and-susumu-shikano" class="section level5">
+<h5>Multilevel Modeling – Summer 2019 – Sascha Göbel and Susumu Shikano</h5>
+<p><strong>Content</strong></p>
+<ol style="list-style-type: decimal">
+<li>Fitting frequentist generalized linear multilevel models</li>
+<li>Basic interpretation</li>
+</ol>
+</div>
+<div id="fitting-frequentist-generalized-linear-multilevel-models" class="section level2">
+<h2>1. Fitting frequentist generalized linear multilevel models</h2>
+<div id="required-packages" class="section level5">
+<h5>Required packages</h5>
+<p>For generalized linear multilevel models we can use the same packages as for linear multilevel models, <code>lme4</code>:</p>
+<p>If you haven’t installed the <code>lme4</code> package yet, grab the newest version from github. We also require the <code>arm</code> package for predictions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
+<span class="kw">install_github</span>(<span class="st">&quot;lme4/lme4&quot;</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>) <span class="co"># this can take some time</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;arm&quot;</span>)</code></pre></div>
+<p>Then attach the package to make it available in you current session:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)
+<span class="kw">library</span>(arm)</code></pre></div>
+</div>
+<div id="getting-the-data" class="section level5">
+<h5>Getting the data</h5>
+<p>To illustrate generalized linear multilevel modeling with <code>lme4</code> we investigate turnout in the 2018 US midterm election across demographic, political, and geographic subgroups. For this purpose, we use a small sample from the 2017 voter register of the State of Florida which was complemented with census data. Other than the data we used for linear multilevel modeling, which was strictly nested, these data are cross-classified. While voters are nested in demographic, political, and geographic subgroups, i.e., age, party, district, etc., these subgroups do not nest within each other but are crossed. For example, voters nested in a specific age group are not strictly nested in a specific party affiliation but can share party affiliations with members from other age groups. Mind that this is not a representative sample of the registered voter population as voters with missing information were removed during data preparation and voting-eligibility in terms of active and inactive registrants is not considered. Similarly, the sample is taken from the voter register inbetween the 2016 presidential and the 2018 midterm election, which is another reason why turnout figures diverge from official statistics.</p>
+<p>To access the data in R, first specify your working directory via <code>setwd()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setwd</span>(<span class="st">&quot;FILE/PATH/TO/YOUR/DIRECTORY&quot;</span>)</code></pre></div>
+<p>and then import the data via <code>readRDS</code> (assuming the data is in your working directory, adjust file path if necessary):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">voterdat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">&quot;voterdat.rds&quot;</span>)</code></pre></div>
+<p>The data contains the following variables for 2000 observations:</p>
+<ul>
+<li>vote2018 - turnout in the 2018 general election (outcome)</li>
+<li>race - respondents’ race/ethnicity (demographic grouping)</li>
+<li>age - respondents’ age (demographic grouping)</li>
+<li>party - respondents’ party affiliation (political grouping)</li>
+<li>income - annual per capita income in respondents’ census block groups rescaled as income/$10,000 (individual-level predictor)</li>
+<li>congdist - congressional district index (geographic grouping)</li>
+<li>incumbent - incumbent party before the 2018 US midterm election (geography-level predictor)</li>
+</ul>
+</div>
+<div id="specifying-a-model" class="section level5">
+<h5>Specifying a model</h5>
+<p>Specifying a generalized linear multilevel model in <code>lme4</code> works exactly the same way as specifying a linear multilevel model. Have a look at the ‘frequentist-lm.html’ if you need to catch up on this.</p>
+</div>
+<div id="fitting-generalized-linear-multilevel-models" class="section level5">
+<h5>Fitting generalized linear multilevel models</h5>
+<p>Use <code>lme4</code>’s <code>glmer()</code> (generalized linear mixed-effects regression) function to fit linear multilevel models. The <code>glmer()</code> function takes three central arguments:</p>
+<ul>
+<li>the <code>formula</code> argument is specified as for linear multilevel models</li>
+<li>the <code>data</code> argument takes the data.frame with the variables</li>
+<li>the <code>family</code> argument specifies the appropriate error distribution and model link function.</li>
+</ul>
+<p>Note that the <code>REML</code> argument does not exist for <code>glmer()</code> as it is not clear how the bias correction of ML estimators achieved by REML generalizes to generalized linear multilevel models (see <a href="http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#reml-for-glmms">here</a>). R packages such as <code>glmmTMB</code> and <code>hglm</code>, however, have implemented REML-like estimation. The <code>glmmTMB</code> package should also be considered for more complex scenarios that require zero-inflated or hurdle models, which are not covered by <code>glmer()</code>.</p>
+<p>As an example of a <code>glmer()</code> workflow we focus on the binomial family and the logit link function, i.e., a multilevel logistic regression. As for notation, given a binary outcome, <span class="math inline">\(y_i\)</span> now follows a binomial distribution, whereby <span class="math inline">\(n_i\)</span> is <span class="math inline">\(1\)</span> for all <span class="math inline">\(i\)</span> (hence reducing to a bernoulli distribution) and <span class="math inline">\(\pi_i\)</span> is the deterministic component transformed by the provided link function to yield probabilities between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>. Otherwise we proceed as for linear multilevel models and include the global/population/fixed intercept in the regression model for <span class="math inline">\(y\)</span> and center the distribution for the group-level models at 0. This allows for interpretations of the group-level parameters as deviations from the population intercept. It further aligns with the <code>lme4</code> output provided via the <code>fixef()</code> and <code>ranef()</code> functions and conceputally simplifies the construction of the linear predictor with multiple variables for grouping.</p>
+Let’s begin with a varying-intercept model without predictors:
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j})\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(\mu\)</span> is the population intercept, <span class="math inline">\(\alpha_{j}\)</span> is a varying-intercept at race groups <span class="math inline">\(J\)</span>. Note that the distribution for the demographic grouping model is centered at 0 with <span class="math inline">\(\sigma^2_\alpha\)</span> denoting the group-level variance. In consequence, <span class="math inline">\(\alpha_{j}\)</span> is the deviation of the race-specific intercepts from the population intercept <span class="math inline">\(\mu\)</span> so that <span class="math inline">\(\mu\)</span> + <span class="math inline">\(\alpha_{j}\)</span> provides the race-specific intercepts. To estimate this model in R, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">glmer</span>(<span class="dt">formula =</span> vote2018 <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>race), 
+               <span class="dt">data =</span> voterdat, 
+               <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))
+<span class="co">#&gt; Warning: 'rBind' is deprecated.</span>
+<span class="co">#&gt;  Since R version 3.2.0, base's rbind() should work fine with S4 objects</span></code></pre></div>
+<p>We will have a look at the fitted models and how to interpret them below, for now we learn how to estimate them. Next up is a varying-intercept model with an individual-level predictor included in the regression model for <span class="math inline">\(\pi_i\)</span>:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(\beta\)</span> represents the slope of <span class="math inline">\(x_i\)</span>, a person’s income, which does not vary by race. To estimate this model in R, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">glmer</span>(<span class="dt">formula =</span> vote2018 <span class="op">~</span><span class="st"> </span>income <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>race),
+               <span class="dt">data =</span> voterdat,
+               <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))</code></pre></div>
+<p>In a next step, age, party, and congressional district are introduced as additional demographic, political and geographic grouping levels. As these groups are crossed, their models do no inform each other as was the case in the strictly hierarchical linear multilevel model that we covered before.</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(j = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(j = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((0, \sigma^2_\zeta)\)</span> for <span class="math inline">\(j = 1, ..., M\)</span>
+</p>
+<p>where <span class="math inline">\(\gamma_k, \delta_l, \zeta_m\)</span> are varying-intercepts at age, party, and congressional district groups respectively and <span class="math inline">\(\sigma^2_\gamma, \sigma^2_\delta, \sigma^2_\zeta\)</span> denote the respective group-level variances. Instead of having many different greek letters, we might distinguish the varying intercepts by writing <span class="math inline">\(\alpha^{race}_{j}, \alpha^{age}_{k},\)</span> etc. and <span class="math inline">\(\sigma^{2}_{race}, \sigma^{2}_{age},\)</span> etc. The choice of notation is a matter of taste.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">glmer</span>(<span class="dt">formula =</span> vote2018 <span class="op">~</span><span class="st"> </span>income <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>race) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>age) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>party) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>congdist),
+               <span class="dt">data =</span> voterdat,
+               <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))</code></pre></div>
+<p>Now we add a group-level predictor to the model, the incumbent party before the 2018 US midterm election at the congressional district level:</p>
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(j = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(j = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((\beta_1 u_m, \sigma^2_\zeta)\)</span> for <span class="math inline">\(j = 1, ..., M\)</span>
+</p>
+<p>where <span class="math inline">\(\beta_1\)</span> is the slope of the cogressional district-level predictor <span class="math inline">\(u_m\)</span>, the incumbent party before the 2018 election.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">glmer</span>(<span class="dt">formula =</span> vote2018 <span class="op">~</span><span class="st"> </span>income <span class="op">+</span><span class="st"> </span>incumbent <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>race) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>age) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>party) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>congdist),
+             <span class="dt">data =</span> voterdat,
+             <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))</code></pre></div>
+<p>Finally, we add one more complication and let the <span class="math inline">\(\beta\)</span>, the slope of <span class="math inline">\(x_i\)</span>, a person’s income, vary across race groups:</p>
+<p align="center">
+<p align="center">
+<span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu_\alpha + \mu_\beta x_i + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta_{j} x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(j = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(j = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((\beta_1 u_m, \sigma^2_\zeta)\)</span> for <span class="math inline">\(j = 1, ..., M\)</span> <br> <span class="math inline">\(\beta_{j} \sim\)</span> N<span class="math inline">\((0, \sigma^2_\beta)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span>
+</p>
+<p>where <span class="math inline">\(\mu_\beta\)</span> is the population slope/fixed effect of <span class="math inline">\(x_i\)</span>, a person’s income. Before, this was <span class="math inline">\(\beta\)</span>, but this slope varies across race groups now, <span class="math inline">\(\beta_{j}\)</span> is therefore the deviation of the race-specific slopes from the population slope <span class="math inline">\(\mu_\beta\)</span>. The population intercept <span class="math inline">\(\mu\)</span> is now <span class="math inline">\(\mu_\alpha\)</span> to distinguish it from <span class="math inline">\(\mu_\beta\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_<span class="dv">5</span> &lt;-<span class="st"> </span><span class="kw">glmer</span>(<span class="dt">formula =</span> vote2018 <span class="op">~</span><span class="st"> </span>income <span class="op">+</span><span class="st"> </span>incumbent <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span>income <span class="op">|</span><span class="st"> </span>race) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>age) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>party) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>congdist),
+             <span class="dt">data =</span> voterdat,
+             <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))</code></pre></div>
+</div>
+</div>
+<div id="basic-interpretation" class="section level2">
+<h2>3. Basic interpretation</h2>
+<p>While the summary output for <code>glmer()</code> is structured in basically the same way as for <code>lmer()</code> and looks very similar, the interpretation of the coefficients is not as intuitive. This is because the coefficients returned by <code>glmer()</code> are continuous values, in our case on the logistic scale. Furthermore, differences in predicted outcome values depend on the value of the predictor and are not constant across the full range of the predictor variable as is the case for linear models. Hence, for generalized linear multilevel models only the direction/sign of the coeffcients and the magnitude of group-level coefficients relative to each other are intuitively interpretable. For interpretations on probability scale, we have to transform the linear predictor using the inverse of the link function, in our case the inverse logistic function.</p>
+<p>We again begin by extracting different parts of the output from the <code>glmer()</code> function:</p>
+<p>Using the <code>fixef()</code> function, we can extract the population- and group-level estimates from the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fixef</span>(glm_<span class="dv">2</span>) <span class="co"># population-level estimates</span>
+<span class="co">#&gt; (Intercept)      income </span>
+<span class="co">#&gt;  -0.1513315   0.0847454</span>
+
+<span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="co"># population-level intercept</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.1513315</span>
+
+<span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="dv">1</span>] <span class="co"># population-level intercept</span>
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;  -0.1513315</span>
+
+<span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;income&quot;</span>] <span class="co"># population-level slope for predictor</span>
+<span class="co">#&gt;    income </span>
+<span class="co">#&gt; 0.0847454</span>
+
+<span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="dv">2</span>] <span class="co"># population-level slope for predictor</span>
+<span class="co">#&gt;    income </span>
+<span class="co">#&gt; 0.0847454</span></code></pre></div>
+<p>To extract the group-specific deviations from the population-level intercept and slope, use the <code>ranef()</code> function. For models with many varying component we enclose the call to <code>ranef()</code> in a call to <code>data.frame()</code> to be able to get a more structured overview:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ranef</span>(glm_<span class="dv">2</span>) <span class="co"># race-specific deviations from population-level intercepts</span>
+<span class="co">#&gt; $race</span>
+<span class="co">#&gt;          (Intercept)</span>
+<span class="co">#&gt; black     0.08247552</span>
+<span class="co">#&gt; hispanic -0.11875912</span>
+<span class="co">#&gt; other    -0.01127765</span>
+<span class="co">#&gt; white     0.04739050</span>
+
+<span class="kw">data.frame</span>(<span class="kw">ranef</span>(glm_<span class="dv">3</span>)) <span class="co"># group-specific deviations from the population-level intercept </span>
+<span class="co">#&gt;      grpvar        term      grp     condval</span>
+<span class="co">#&gt; 1  congdist (Intercept)        1 -0.04385306</span>
+<span class="co">#&gt; 2  congdist (Intercept)        2 -0.01367256</span>
+<span class="co">#&gt; 3  congdist (Intercept)        3  0.21019138</span>
+<span class="co">#&gt; 4  congdist (Intercept)        4  0.23733341</span>
+<span class="co">#&gt; 5  congdist (Intercept)        5  0.15933008</span>
+<span class="co">#&gt; 6  congdist (Intercept)        6  0.34563321</span>
+<span class="co">#&gt; 7  congdist (Intercept)        7  0.42665514</span>
+<span class="co">#&gt; 8  congdist (Intercept)        8  0.34290689</span>
+<span class="co">#&gt; 9  congdist (Intercept)        9  0.14914442</span>
+<span class="co">#&gt; 10 congdist (Intercept)       10  0.17349729</span>
+<span class="co">#&gt; 11 congdist (Intercept)       11  0.04719508</span>
+<span class="co">#&gt; 12 congdist (Intercept)       12  0.61263595</span>
+<span class="co">#&gt; 13 congdist (Intercept)       13  0.18652616</span>
+<span class="co">#&gt; 14 congdist (Intercept)       14  0.08658144</span>
+<span class="co">#&gt; 15 congdist (Intercept)       15 -0.36744530</span>
+<span class="co">#&gt; 16 congdist (Intercept)       16  0.08581624</span>
+<span class="co">#&gt; 17 congdist (Intercept)       17  0.04679972</span>
+<span class="co">#&gt; 18 congdist (Intercept)       18 -0.19656310</span>
+<span class="co">#&gt; 19 congdist (Intercept)       19 -0.13491970</span>
+<span class="co">#&gt; 20 congdist (Intercept)       20 -0.49959294</span>
+<span class="co">#&gt; 21 congdist (Intercept)       21 -1.48412770</span>
+<span class="co">#&gt; 22 congdist (Intercept)       22 -0.70357763</span>
+<span class="co">#&gt; 23 congdist (Intercept)       23 -0.33300585</span>
+<span class="co">#&gt; 24 congdist (Intercept)       24 -0.15777017</span>
+<span class="co">#&gt; 25 congdist (Intercept)       25  0.20754685</span>
+<span class="co">#&gt; 26 congdist (Intercept)       26 -0.05976092</span>
+<span class="co">#&gt; 27 congdist (Intercept)       27  0.67868103</span>
+<span class="co">#&gt; 28      age (Intercept)    18_29 -0.64569649</span>
+<span class="co">#&gt; 29      age (Intercept)    30_44 -0.22805229</span>
+<span class="co">#&gt; 30      age (Intercept)    45_64  0.30495226</span>
+<span class="co">#&gt; 31      age (Intercept)      65+  0.57121352</span>
+<span class="co">#&gt; 32     race (Intercept)    black  0.21555916</span>
+<span class="co">#&gt; 33     race (Intercept) hispanic -0.14829560</span>
+<span class="co">#&gt; 34     race (Intercept)    other  0.01261291</span>
+<span class="co">#&gt; 35     race (Intercept)    white -0.07953395</span>
+<span class="co">#&gt; 36    party (Intercept)      dem  0.16592099</span>
+<span class="co">#&gt; 37    party (Intercept)      npa -0.29831624</span>
+<span class="co">#&gt; 38    party (Intercept)      rep  0.13302408</span></code></pre></div>
+<p>Via the <code>coef()</code> function you can get group-level coefficients, which are, however, easily obtained by adding the group-level deviations to the global intercept.</p>
+<p>In class, We will now practice the interpretation of some of the models we have estimated. For this, we will proceed as before by thinking of multilevel modeling as a predictive tool using descriptive terminology.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(glm_<span class="dv">1</span>)
+<span class="co">#&gt; Generalized linear mixed model fit by maximum likelihood (Laplace</span>
+<span class="co">#&gt;   Approximation) [glmerMod]</span>
+<span class="co">#&gt;  Family: binomial  ( logit )</span>
+<span class="co">#&gt; Formula: vote2018 ~ 1 + (1 | race)</span>
+<span class="co">#&gt;    Data: voterdat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   2764.7   2775.9  -1380.3   2760.7     1998 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -1.0967 -1.0967  0.9119  0.9119  1.0347 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  race   (Intercept) 0.0175   0.1323  </span>
+<span class="co">#&gt; Number of obs: 2000, groups:  race, 4</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)</span>
+<span class="co">#&gt; (Intercept)  0.08782    0.08965    0.98    0.327</span>
+
+<span class="kw">ranef</span>(glm_<span class="dv">1</span>)
+<span class="co">#&gt; $race</span>
+<span class="co">#&gt;          (Intercept)</span>
+<span class="co">#&gt; black     0.07316102</span>
+<span class="co">#&gt; hispanic -0.15607769</span>
+<span class="co">#&gt; other    -0.01409633</span>
+<span class="co">#&gt; white     0.09674063</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(glm_<span class="dv">2</span>)
+<span class="co">#&gt; Generalized linear mixed model fit by maximum likelihood (Laplace</span>
+<span class="co">#&gt;   Approximation) [glmerMod]</span>
+<span class="co">#&gt;  Family: binomial  ( logit )</span>
+<span class="co">#&gt; Formula: vote2018 ~ income + (1 | race)</span>
+<span class="co">#&gt;    Data: voterdat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   2756.1   2772.9  -1375.0   2750.1     1997 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -2.5895 -1.0469  0.8163  0.9412  1.1038 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  race   (Intercept) 0.01205  0.1098  </span>
+<span class="co">#&gt; Number of obs: 2000, groups:  race, 4</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span>
+<span class="co">#&gt; (Intercept) -0.15133    0.11044  -1.370   0.1706   </span>
+<span class="co">#&gt; income       0.08475    0.02685   3.157   0.0016 **</span>
+<span class="co">#&gt; ---</span>
+<span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;        (Intr)</span>
+<span class="co">#&gt; income -0.690</span>
+
+<span class="kw">ranef</span>(glm_<span class="dv">2</span>)
+<span class="co">#&gt; $race</span>
+<span class="co">#&gt;          (Intercept)</span>
+<span class="co">#&gt; black     0.08247552</span>
+<span class="co">#&gt; hispanic -0.11875912</span>
+<span class="co">#&gt; other    -0.01127765</span>
+<span class="co">#&gt; white     0.04739050</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(glm_<span class="dv">3</span>)
+<span class="co">#&gt; Generalized linear mixed model fit by maximum likelihood (Laplace</span>
+<span class="co">#&gt;   Approximation) [glmerMod]</span>
+<span class="co">#&gt;  Family: binomial  ( logit )</span>
+<span class="co">#&gt; Formula: vote2018 ~ income + (1 | race) + (1 | age) + (1 | party) + (1 |  </span>
+<span class="co">#&gt;     congdist)</span>
+<span class="co">#&gt;    Data: voterdat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   2624.0   2657.6  -1306.0   2612.0     1994 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -2.5088 -0.9417  0.5816  0.8275  2.4419 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev.</span>
+<span class="co">#&gt;  congdist (Intercept) 0.23802  0.4879  </span>
+<span class="co">#&gt;  age      (Intercept) 0.26325  0.5131  </span>
+<span class="co">#&gt;  race     (Intercept) 0.03731  0.1931  </span>
+<span class="co">#&gt;  party    (Intercept) 0.06849  0.2617  </span>
+<span class="co">#&gt; Number of obs: 2000, groups:  congdist, 27; age, 4; race, 4; party, 3</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)    </span>
+<span class="co">#&gt; (Intercept) -0.34056    0.34513  -0.987 0.323764    </span>
+<span class="co">#&gt; income       0.10743    0.03062   3.508 0.000452 ***</span>
+<span class="co">#&gt; ---</span>
+<span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;        (Intr)</span>
+<span class="co">#&gt; income -0.249</span>
+
+<span class="kw">ranef</span>(glm_<span class="dv">3</span>)
+<span class="co">#&gt; $congdist</span>
+<span class="co">#&gt;    (Intercept)</span>
+<span class="co">#&gt; 1  -0.04385306</span>
+<span class="co">#&gt; 2  -0.01367256</span>
+<span class="co">#&gt; 3   0.21019138</span>
+<span class="co">#&gt; 4   0.23733341</span>
+<span class="co">#&gt; 5   0.15933008</span>
+<span class="co">#&gt; 6   0.34563321</span>
+<span class="co">#&gt; 7   0.42665514</span>
+<span class="co">#&gt; 8   0.34290689</span>
+<span class="co">#&gt; 9   0.14914442</span>
+<span class="co">#&gt; 10  0.17349729</span>
+<span class="co">#&gt; 11  0.04719508</span>
+<span class="co">#&gt; 12  0.61263595</span>
+<span class="co">#&gt; 13  0.18652616</span>
+<span class="co">#&gt; 14  0.08658144</span>
+<span class="co">#&gt; 15 -0.36744530</span>
+<span class="co">#&gt; 16  0.08581624</span>
+<span class="co">#&gt; 17  0.04679972</span>
+<span class="co">#&gt; 18 -0.19656310</span>
+<span class="co">#&gt; 19 -0.13491970</span>
+<span class="co">#&gt; 20 -0.49959294</span>
+<span class="co">#&gt; 21 -1.48412770</span>
+<span class="co">#&gt; 22 -0.70357763</span>
+<span class="co">#&gt; 23 -0.33300585</span>
+<span class="co">#&gt; 24 -0.15777017</span>
+<span class="co">#&gt; 25  0.20754685</span>
+<span class="co">#&gt; 26 -0.05976092</span>
+<span class="co">#&gt; 27  0.67868103</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $age</span>
+<span class="co">#&gt;       (Intercept)</span>
+<span class="co">#&gt; 18_29  -0.6456965</span>
+<span class="co">#&gt; 30_44  -0.2280523</span>
+<span class="co">#&gt; 45_64   0.3049523</span>
+<span class="co">#&gt; 65+     0.5712135</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $race</span>
+<span class="co">#&gt;          (Intercept)</span>
+<span class="co">#&gt; black     0.21555916</span>
+<span class="co">#&gt; hispanic -0.14829560</span>
+<span class="co">#&gt; other     0.01261291</span>
+<span class="co">#&gt; white    -0.07953395</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $party</span>
+<span class="co">#&gt;     (Intercept)</span>
+<span class="co">#&gt; dem   0.1659210</span>
+<span class="co">#&gt; npa  -0.2983162</span>
+<span class="co">#&gt; rep   0.1330241</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(glm_<span class="dv">5</span>)
+<span class="co">#&gt; Generalized linear mixed model fit by maximum likelihood (Laplace</span>
+<span class="co">#&gt;   Approximation) [glmerMod]</span>
+<span class="co">#&gt;  Family: binomial  ( logit )</span>
+<span class="co">#&gt; Formula: </span>
+<span class="co">#&gt; vote2018 ~ income + incumbent + (1 + income | race) + (1 | age) +  </span>
+<span class="co">#&gt;     (1 | party) + (1 | congdist)</span>
+<span class="co">#&gt;    Data: voterdat</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;      AIC      BIC   logLik deviance df.resid </span>
+<span class="co">#&gt;   2623.4   2673.8  -1302.7   2605.4     1991 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Scaled residuals: </span>
+<span class="co">#&gt;     Min      1Q  Median      3Q     Max </span>
+<span class="co">#&gt; -2.3830 -0.9343  0.5839  0.8203  2.4561 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random effects:</span>
+<span class="co">#&gt;  Groups   Name        Variance Std.Dev. Corr </span>
+<span class="co">#&gt;  congdist (Intercept) 0.20401  0.4517        </span>
+<span class="co">#&gt;  age      (Intercept) 0.25484  0.5048        </span>
+<span class="co">#&gt;  race     (Intercept) 0.40983  0.6402        </span>
+<span class="co">#&gt;           income      0.03576  0.1891   -1.00</span>
+<span class="co">#&gt;  party    (Intercept) 0.06769  0.2602        </span>
+<span class="co">#&gt; Number of obs: 2000, groups:  congdist, 27; age, 4; race, 4; party, 3</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Fixed effects:</span>
+<span class="co">#&gt;               Estimate Std. Error z value Pr(&gt;|z|)  </span>
+<span class="co">#&gt; (Intercept)    -0.7379     0.4971  -1.484   0.1377  </span>
+<span class="co">#&gt; income          0.1426     0.1187   1.202   0.2295  </span>
+<span class="co">#&gt; incumbentrepi   0.3942     0.2049   1.924   0.0543 .</span>
+<span class="co">#&gt; ---</span>
+<span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Correlation of Fixed Effects:</span>
+<span class="co">#&gt;             (Intr) income</span>
+<span class="co">#&gt; income      -0.718       </span>
+<span class="co">#&gt; incumbentrp -0.242  0.007</span>
+
+<span class="kw">ranef</span>(glm_<span class="dv">5</span>)
+<span class="co">#&gt; $congdist</span>
+<span class="co">#&gt;     (Intercept)</span>
+<span class="co">#&gt; 1  -0.141525084</span>
+<span class="co">#&gt; 2  -0.155766603</span>
+<span class="co">#&gt; 3   0.075912954</span>
+<span class="co">#&gt; 4   0.108535069</span>
+<span class="co">#&gt; 5   0.316077774</span>
+<span class="co">#&gt; 6   0.197103292</span>
+<span class="co">#&gt; 7   0.608285715</span>
+<span class="co">#&gt; 8   0.196177889</span>
+<span class="co">#&gt; 9   0.355517360</span>
+<span class="co">#&gt; 10  0.371330975</span>
+<span class="co">#&gt; 11 -0.095061651</span>
+<span class="co">#&gt; 12  0.462999898</span>
+<span class="co">#&gt; 13  0.346664073</span>
+<span class="co">#&gt; 14  0.276397983</span>
+<span class="co">#&gt; 15 -0.478519661</span>
+<span class="co">#&gt; 16 -0.049191227</span>
+<span class="co">#&gt; 17 -0.093180665</span>
+<span class="co">#&gt; 18 -0.321591677</span>
+<span class="co">#&gt; 19 -0.257933349</span>
+<span class="co">#&gt; 20 -0.310717204</span>
+<span class="co">#&gt; 21 -1.258515825</span>
+<span class="co">#&gt; 22 -0.501845632</span>
+<span class="co">#&gt; 23 -0.169471216</span>
+<span class="co">#&gt; 24 -0.006443695</span>
+<span class="co">#&gt; 25  0.131234442</span>
+<span class="co">#&gt; 26 -0.130724583</span>
+<span class="co">#&gt; 27  0.525116868</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $age</span>
+<span class="co">#&gt;       (Intercept)</span>
+<span class="co">#&gt; 18_29  -0.6475496</span>
+<span class="co">#&gt; 30_44  -0.2186426</span>
+<span class="co">#&gt; 45_64   0.3094223</span>
+<span class="co">#&gt; 65+     0.5578520</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $race</span>
+<span class="co">#&gt;          (Intercept)      income</span>
+<span class="co">#&gt; black      0.8596549 -0.25127099</span>
+<span class="co">#&gt; hispanic  -0.4477830  0.13177494</span>
+<span class="co">#&gt; other     -0.5282433  0.15835104</span>
+<span class="co">#&gt; white      0.1519048 -0.04937201</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $party</span>
+<span class="co">#&gt;     (Intercept)</span>
+<span class="co">#&gt; dem   0.1755601</span>
+<span class="co">#&gt; npa  -0.2976075</span>
+<span class="co">#&gt; rep   0.1223348</span></code></pre></div>
+<p>To arrive at predictions of turnout probabilities for individuals in specific demographic, political, and geographic subgroups and with specific values at individual and group-level predictors, we can replicate the linear predictor accordingly and transform it using the inverse logistic function provided by <code>invlogit</code> from the <code>arm</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## predictions based on a model with the intercept varying by race and a person's income as individual level predictor
+
+<span class="co"># predicted turnout probability for a hispanic voter</span>
+<span class="kw">invlogit</span>( <span class="co"># inverse logistic tranformation</span>
+  <span class="kw">fixef</span>(glm_<span class="dv">1</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># population intercept</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">1</span>)<span class="op">$</span>race[<span class="dv">2</span>,] <span class="co"># varying intercept</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;    0.482941</span>
+
+<span class="co"># for a black voter with the same income</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">1</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">1</span>)<span class="op">$</span>race[<span class="dv">1</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5401574</span>
+
+<span class="co"># for a white voter with the same income</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">1</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">1</span>)<span class="op">$</span>race[<span class="dv">4</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5460085</span>
+
+
+<span class="co"># predicted turnout probability for a hispanic voter from a neighborhood with an annual per capita income of 15,000</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># population intercept</span>
+<span class="st">    </span><span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># population slope</span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">2</span>)<span class="op">$</span>race[<span class="dv">2</span>,] <span class="co"># varying intercept </span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.4643176</span>
+
+<span class="co"># for a black voter with the same income</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">2</span>)<span class="op">$</span>race[<span class="dv">1</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5145614</span>
+
+<span class="co"># for a white voter with the same income</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">2</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">2</span>)<span class="op">$</span>race[<span class="dv">4</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;    0.505794</span>
+
+
+## predictions based on a model with the intercept varying by race, age, party, and congressional district and a person's income as individual level predictor
+
+<span class="co"># predicted turnout probability for a hispanic voter from the 21. congressional district with age between 30 and 44, republican party affiliation and from a neighborhood with an annual per capita income of 15,000</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># population intercept</span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># population slope</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="co"># varying intercepts</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">21</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.1293336</span>
+
+<span class="co"># for a black voter </span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">21</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.1760982</span>
+
+<span class="co"># for a white voter </span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">4</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">21</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.1372759</span>
+  
+
+<span class="co"># predicted turnout probability for a hispanic voter from the 12. congressional district with age between 30 and 44, republican party affiliation and from a neighborhood with an annual per capita income of 15,000</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># population intercept</span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># population slope</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span><span class="co"># varying intercepts</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5473327</span>
+
+<span class="co"># for a black voter</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">1</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.6350062</span>
+
+<span class="co"># for a white voter </span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">3</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>race[<span class="dv">4</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">3</span>)<span class="op">$</span>party[<span class="dv">3</span>,]
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.5643071</span>
+
+
+## predictions based on a model with the intercept varying by race, age, party, and congressional district, a person's income as individual level predictor varying by race, and the incumbent party before the election as group-level predictor
+
+<span class="co"># predicted turnout probability for a hispanic voter from the 12. congressional district (republican incumbent) with age between 30 and 44, republican party affiliation and from a neighborhood with an annual per capita income of 15,000</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span><span class="co"># population intercept </span>
+<span class="st">    </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># population slope</span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">2</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="co"># varying intercepts</span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">2</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># varying slope</span>
+<span class="st">    </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span> <span class="co"># slope of group-level predictor</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;    0.496704</span>
+
+<span class="co"># black voter</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">1</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">1</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.6725376</span>
+
+<span class="co"># white voter</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">3</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">3</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.4865581</span>
+
+
+<span class="co"># hispanic voter with annual per capita income of 50,000</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st">  </span><span class="co"># population intercept</span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span><span class="co"># population slope</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">2</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="co"># varying intercepts</span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">2</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="co"># varying slope</span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span> <span class="co"># slope of group-level predictor</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.6101703</span>
+
+<span class="co"># black voter</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">1</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">1</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.4601438</span>
+
+<span class="co"># white voter</span>
+<span class="kw">invlogit</span>(
+  <span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;income&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">3</span>,<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>congdist[<span class="dv">12</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>age[<span class="dv">2</span>,] <span class="op">+</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>party[<span class="dv">3</span>,] <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ranef</span>(glm_<span class="dv">5</span>)<span class="op">$</span>race[<span class="dv">3</span>,<span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">fixef</span>(glm_<span class="dv">5</span>)[<span class="st">&quot;incumbentrepi&quot;</span>] <span class="op">*</span><span class="st"> </span><span class="dv">1</span>
+)
+<span class="co">#&gt; (Intercept) </span>
+<span class="co">#&gt;   0.6225647</span></code></pre></div>
+<p>Again, these examples are interesting and useful to explore and understand the fitted model. But constructing these linear predictors for different individuals is also quite tedious. Usually we are interested in predictions that summarize the model in a more comprehensive fashion, i.e., a population-averaged interpretation of estimates, that is, estimates of the average outcome in the population given specific levels of input variables as opposed to predictions for very specific observations. We will learn how to obtain and communicate population-averaged predictions and their uncertainty for generalized linear multilevel models in the sessions on ‘presenting results of multilevel models’ using simulation (or informal Bayesian inference).</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
