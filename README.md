@@ -6,11 +6,11 @@ This repository includes scripts for courses I taught.
 
 This course was taught together with Peter Selb in summer semester 2018 and with Susumu Shikano in summer semester 2019 at the University of Konstanz. The latest scripts are:
 
-* [R Primer](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/r-primer.html): 
-* Frequentist Multilevel Modeling in R I: 
-* Frequentist Multilevel Modeling in R I: 
-* Bayesian Multilevel Modeling in R: 
-* Postestimation for Multilevel Modeling in R:
+* [R Primer](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/r-primer.html): ...
+* [Frequentist Multilevel Modeling in R I](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/frequentist-i.html): ...
+* [Frequentist Multilevel Modeling in R I](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/frequentist-ii.html): ...
+* [Bayesian Multilevel Modeling in R](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/bayesian.html): ... 
+* [Postestimation for Multilevel Modeling in R](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/postestimation.html): ...
 
 ## Author information
 **Sascha Göbel** <br />

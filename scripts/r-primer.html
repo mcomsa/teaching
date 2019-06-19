@@ -70,8 +70,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<div id="multilevel-modeling-summer-2019-sascha-gobel" class="section level5">
-<h5>Multilevel Modeling – Summer 2019 –Sascha Göbel</h5>
+<div id="multilevel-modeling-summer-2019-sascha-gobel-and-susumu-shikano" class="section level5">
+<h5>Multilevel Modeling – Summer 2019 – Sascha Göbel and Susumu Shikano</h5>
 <p><strong>Content</strong></p>
 <ol style="list-style-type: decimal">
 <li>Obtain and install R and RStudio</li>
@@ -290,36 +290,36 @@ results <span class="co"># 125 is the third element in results</span>
 } <span class="cf">else</span> {
   <span class="kw">print</span>(<span class="st">&quot;x is greater than 10&quot;</span>)
 }
-<span class="co">#&gt; [1] &quot;x is greater than 10&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;x is less than 10&quot;</span></code></pre></div>
 <p>Conditional execution with vectorized <code>ifelse</code> - <code>ifelse(condition, if met do, else do)</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">values &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dt">x =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">20</span>)
 <span class="kw">ifelse</span>(values <span class="op">&gt;=</span><span class="st"> </span><span class="dv">10</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>)
-<span class="co">#&gt;  [1]  TRUE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE  TRUE  TRUE FALSE</span>
-<span class="co">#&gt; [12]  TRUE  TRUE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE</span></code></pre></div>
+<span class="co">#&gt;  [1]  TRUE FALSE  TRUE FALSE  TRUE FALSE FALSE  TRUE  TRUE  TRUE  TRUE</span>
+<span class="co">#&gt; [12]  TRUE FALSE  TRUE FALSE FALSE  TRUE  TRUE FALSE FALSE</span></code></pre></div>
 <p><code>for</code> loop for iterative tasks - <code>for (element in sequence of elements) {do}</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(values)) {
   <span class="kw">print</span>(values[i])
 }
-<span class="co">#&gt; [1] 19</span>
-<span class="co">#&gt; [1] 5</span>
-<span class="co">#&gt; [1] 3</span>
-<span class="co">#&gt; [1] 8</span>
-<span class="co">#&gt; [1] 18</span>
-<span class="co">#&gt; [1] 7</span>
-<span class="co">#&gt; [1] 11</span>
-<span class="co">#&gt; [1] 1</span>
-<span class="co">#&gt; [1] 13</span>
-<span class="co">#&gt; [1] 10</span>
-<span class="co">#&gt; [1] 4</span>
-<span class="co">#&gt; [1] 17</span>
-<span class="co">#&gt; [1] 20</span>
-<span class="co">#&gt; [1] 6</span>
-<span class="co">#&gt; [1] 2</span>
-<span class="co">#&gt; [1] 9</span>
 <span class="co">#&gt; [1] 15</span>
+<span class="co">#&gt; [1] 6</span>
+<span class="co">#&gt; [1] 14</span>
+<span class="co">#&gt; [1] 7</span>
+<span class="co">#&gt; [1] 17</span>
+<span class="co">#&gt; [1] 1</span>
+<span class="co">#&gt; [1] 5</span>
+<span class="co">#&gt; [1] 13</span>
+<span class="co">#&gt; [1] 19</span>
+<span class="co">#&gt; [1] 20</span>
+<span class="co">#&gt; [1] 10</span>
+<span class="co">#&gt; [1] 18</span>
+<span class="co">#&gt; [1] 8</span>
 <span class="co">#&gt; [1] 12</span>
+<span class="co">#&gt; [1] 4</span>
+<span class="co">#&gt; [1] 9</span>
+<span class="co">#&gt; [1] 11</span>
 <span class="co">#&gt; [1] 16</span>
-<span class="co">#&gt; [1] 14</span></code></pre></div>
+<span class="co">#&gt; [1] 3</span>
+<span class="co">#&gt; [1] 2</span></code></pre></div>
 <p>Note how ‘i’ appears in the global environment, this is a side effect of using control structures outside of functions - the state of the program is changed, i.e., the global environment is affected. Mind that this can have unanticipated consequences. <code>for</code> loop with conditional execution</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(values)) {
   <span class="cf">if</span> (values[i] <span class="op">&gt;=</span><span class="st"> </span><span class="dv">10</span>) {
@@ -330,24 +330,24 @@ results <span class="co"># 125 is the third element in results</span>
 }
 <span class="co">#&gt; [1] TRUE</span>
 <span class="co">#&gt; [1] FALSE</span>
-<span class="co">#&gt; [1] FALSE</span>
-<span class="co">#&gt; [1] FALSE</span>
 <span class="co">#&gt; [1] TRUE</span>
 <span class="co">#&gt; [1] FALSE</span>
 <span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] FALSE</span>
-<span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] FALSE</span>
-<span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] FALSE</span>
 <span class="co">#&gt; [1] FALSE</span>
 <span class="co">#&gt; [1] FALSE</span>
 <span class="co">#&gt; [1] TRUE</span>
 <span class="co">#&gt; [1] TRUE</span>
 <span class="co">#&gt; [1] TRUE</span>
-<span class="co">#&gt; [1] TRUE</span></code></pre></div>
+<span class="co">#&gt; [1] TRUE</span>
+<span class="co">#&gt; [1] TRUE</span>
+<span class="co">#&gt; [1] FALSE</span>
+<span class="co">#&gt; [1] TRUE</span>
+<span class="co">#&gt; [1] FALSE</span>
+<span class="co">#&gt; [1] FALSE</span>
+<span class="co">#&gt; [1] TRUE</span>
+<span class="co">#&gt; [1] TRUE</span>
+<span class="co">#&gt; [1] FALSE</span>
+<span class="co">#&gt; [1] FALSE</span></code></pre></div>
 <p><code>while</code> loop - <code>while (condition is met) {do}</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">while</span> (result <span class="op">&lt;</span><span class="st"> </span><span class="dv">200</span>) {
   <span class="kw">print</span>(result)
@@ -378,7 +378,7 @@ results <span class="co"># 125 is the third element in results</span>
 }</code></pre></div>
 <p>Conditional jump with <code>break</code> - stops execution of loop upon condition</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">values
-<span class="co">#&gt;  [1]  0  0  0  8 18  0  0  0  0 10  4  0 20  6  2  0  0 12 16 14</span>
+<span class="co">#&gt;  [1]  0  6 14  0  0  0  0  0  0 20 10 18  8 12  4  0  0 16  0  2</span>
 <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(values)) {
   <span class="kw">print</span>(i)
   values[i] &lt;-<span class="st"> </span>values[i] <span class="op">+</span><span class="st"> </span><span class="dv">1</span>
@@ -403,8 +403,10 @@ results <span class="co"># 125 is the third element in results</span>
 <span class="co">#&gt; [1] 15</span>
 <span class="co">#&gt; [1] 16</span>
 <span class="co">#&gt; [1] 17</span>
+<span class="co">#&gt; [1] 18</span>
+<span class="co">#&gt; [1] 19</span>
 values
-<span class="co">#&gt;  [1]  1  1  1  9 19  1  1  1  1 11  5  1 21  7  3  1  1 12 16 14</span></code></pre></div>
+<span class="co">#&gt;  [1]  1  7 15  1  1  1  1  1  1 21 11 19  9 13  5  1  1 17  1  2</span></code></pre></div>
 </div>
 </div>
 <div id="data-types-and-transformations-i.e.-how-r-stores-data" class="section level3">
@@ -426,7 +428,7 @@ boolean
 <span class="kw">typeof</span>(<span class="dv">1</span> <span class="op">==</span><span class="st"> </span><span class="dv">2</span>) <span class="co"># comparison operation</span>
 <span class="co">#&gt; [1] &quot;logical&quot;</span>
 results <span class="op">%in%</span><span class="st"> </span>values <span class="co"># matching operation</span>
-<span class="co">#&gt; [1] FALSE FALSE FALSE</span></code></pre></div>
+<span class="co">#&gt; [1] FALSE  TRUE FALSE</span></code></pre></div>
 </div>
 <div id="integer" class="section level5">
 <h5>Integer</h5>
@@ -487,7 +489,7 @@ result <span class="op">+</span><span class="st"> </span><span class="kw">as.num
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result <span class="co"># a scalar, or a vector of length 1</span>
 <span class="co">#&gt; [1] 200</span>
 values <span class="co"># a vector, a collection of elements</span>
-<span class="co">#&gt;  [1]  1  1  1  9 19  1  1  1  1 11  5  1 21  7  3  1  1 12 16 14</span>
+<span class="co">#&gt;  [1]  1  7 15  1  1  1  1  1  1 21 11 19  9 13  5  1  1 17  1  2</span>
 log_vect &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>, T, F) <span class="co"># a logical vector</span>
 <span class="kw">length</span>(log_vect) <span class="co"># length of vector</span>
 <span class="co">#&gt; [1] 4</span>
