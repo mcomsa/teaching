@@ -12,6 +12,8 @@ This course was taught together with Peter Selb in summer semester 2018 and with
 * [Bayesian Multilevel Modeling in R](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/bayesian.html): ... 
 * [Postestimation for Multilevel Modeling in R](http://htmlpreview.github.com/?https://github.com/saschagobel/teaching/blob/master/scripts/postestimation.html): ...
 
+Html files can be downloaded [here](https://github.com/saschagobel/teaching/tree/master/scripts)
+
 ## Author information
 **Sascha Göbel** <br />
 Graduate School of Decision Sciences <br />
