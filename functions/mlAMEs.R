@@ -2,6 +2,9 @@ mlAMEs <- function(data, levels, draws, posterior, linear_predictor, type) {
   # throw error if type is not one of linear or logit
   if (!(type %in% c("linear", "logit")))
     stop ("mlAMEs works with 'type' = 'linear' or 'logit' only. Specify the 'type' argument accordingly or adjust mlAMEs.")
+  # translate all factor variables to character
+  data[sapply(data, is.factor)] <- lapply(data[sapply(data, is.factor)], 
+         as.character)
   # create ID column denoting unique combinations of variables in the data
   data <- as.data.table(data)
   data[, predID := .GRP, by = names(data)]
@@ -44,7 +47,7 @@ mlAMEs <- function(data, levels, draws, posterior, linear_predictor, type) {
                            # for each posterior draw expand the predictions for unique combinations
                            # of variables in the data according to their occurence in the data, i.e.,
                            # a prediction for each individual in the data. Then average over the predictions,
-                           # producing a population averaged prediction for each draw and step of x
+                           # producing a population-averaged prediction for each draw and step of x
                            ames <- 1:n_draws %>%
                              purrr::map(~{
                                y <- mean(rep(prediction[.x,], times = predID_count))
