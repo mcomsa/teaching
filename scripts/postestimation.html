@@ -86,7 +86,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h5>Required packages</h5>
 <p>For postestimation we mostly rely on packages already introduced in previous sessions. For frequentist models we make heavy use of the <code>arm</code> package, accompanying the book by Gelman and Hill (2007). In addition, we require the <code>foreach</code>, <code>doParallel</code>, <code>data.table</code>, and <code>purrr</code> packages to speed up some iterative computations and make them more succinct. To install these packages, execute:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">&quot;arm&quot;</span>, <span class="st">&quot;foreach&quot;</span>, <span class="st">&quot;doParallel&quot;</span>, <span class="st">&quot;data.table&quot;</span>, <span class="st">&quot;purrr&quot;</span>)</code></pre></div>
-<p>warnings() Attach all packages:</p>
+<p>Attach all packages:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)
 <span class="kw">library</span>(rstan)
 <span class="kw">library</span>(arm)
@@ -95,7 +95,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">library</span>(data.table)
 <span class="kw">library</span>(purrr)
 <span class="kw">library</span>(stringr)
-<span class="kw">library</span>(dplyr)</code></pre></div>
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(stringr)</code></pre></div>
 </div>
 <div id="getting-the-data" class="section level5">
 <h5>Getting the data</h5>
@@ -124,12 +125,12 @@ voterdat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span cla
 <p>Let’s have a look at the structure of the object storing the simulated sampling distributions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glimpse</span>(sims_lm_<span class="dv">2</span>)
 <span class="co">#&gt; Formal class 'sim.merMod' [package &quot;arm&quot;] with 3 slots</span>
-<span class="co">#&gt;   ..@ fixef: num [1:1000, 1:2] -0.029 0.0285 -0.0918 -0.0177 -0.1194 ...</span>
+<span class="co">#&gt;   ..@ fixef: num [1:1000, 1:2] -0.0266 -0.0606 -0.011 -0.0245 0.0999 ...</span>
 <span class="co">#&gt;   .. ..- attr(*, &quot;dimnames&quot;)=List of 2</span>
 <span class="co">#&gt;   ..@ ranef:List of 1</span>
-<span class="co">#&gt;   .. ..$ county: num [1:1000, 1:152, 1] -0.841 -1.057 -0.818 -0.807 -0.957 ...</span>
+<span class="co">#&gt;   .. ..$ county: num [1:1000, 1:152, 1] -1.021 -1.082 -0.976 -0.893 -0.932 ...</span>
 <span class="co">#&gt;   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 3</span>
-<span class="co">#&gt;   ..@ sigma: num [1:1000] 0.808 0.805 0.792 0.795 0.788 ...</span></code></pre></div>
+<span class="co">#&gt;   ..@ sigma: num [1:1000] 0.81 0.781 0.804 0.786 0.808 ...</span></code></pre></div>
 <p>The object of class <code>sim.merMod</code> holds 3 slots:</p>
 <ul>
 <li><code>@fixef</code>, which stores a matrix of posterior simulations of the global intercept, individual- and group-level predictors.</li>
@@ -152,45 +153,45 @@ fixed_coefs &lt;-<span class="st"> </span><span class="kw">cbind</span>(fixed_co
 
 <span class="co"># inspect the matrices</span>
 fixed_coefs[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,]
-<span class="co">#&gt;                mu       male female</span>
-<span class="co">#&gt;  [1,] -0.02904946 0.09223020      0</span>
-<span class="co">#&gt;  [2,]  0.02847972 0.06668795      0</span>
-<span class="co">#&gt;  [3,] -0.09183165 0.10194583      0</span>
-<span class="co">#&gt;  [4,] -0.01774132 0.05667946      0</span>
-<span class="co">#&gt;  [5,] -0.11944997 0.07213750      0</span>
-<span class="co">#&gt;  [6,] -0.08186847 0.06215808      0</span>
-<span class="co">#&gt;  [7,]  0.11580584 0.02425481      0</span>
-<span class="co">#&gt;  [8,]  0.03882145 0.05022929      0</span>
-<span class="co">#&gt;  [9,] -0.01097239 0.13542410      0</span>
-<span class="co">#&gt; [10,]  0.01034210 0.06213022      0</span>
+<span class="co">#&gt;                 mu         male female</span>
+<span class="co">#&gt;  [1,] -0.026635369  0.094818336      0</span>
+<span class="co">#&gt;  [2,] -0.060554807  0.075918832      0</span>
+<span class="co">#&gt;  [3,] -0.010958545  0.005561563      0</span>
+<span class="co">#&gt;  [4,] -0.024453766  0.055084965      0</span>
+<span class="co">#&gt;  [5,]  0.099868844 -0.016874299      0</span>
+<span class="co">#&gt;  [6,] -0.035252064 -0.019035432      0</span>
+<span class="co">#&gt;  [7,] -0.057078942  0.130966019      0</span>
+<span class="co">#&gt;  [8,] -0.010016577  0.049762397      0</span>
+<span class="co">#&gt;  [9,] -0.092698093  0.132998790      0</span>
+<span class="co">#&gt; [10,] -0.003089457  0.035574565      0</span>
 county_intercepts[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]
 <span class="co">#&gt;       Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald</span>
-<span class="co">#&gt;  [1,]                                              -0.8406868</span>
-<span class="co">#&gt;  [2,]                                              -1.0570203</span>
-<span class="co">#&gt;  [3,]                                              -0.8177476</span>
-<span class="co">#&gt;  [4,]                                              -0.8072505</span>
-<span class="co">#&gt;  [5,]                                              -0.9569152</span>
-<span class="co">#&gt;  [6,]                                              -0.9083100</span>
-<span class="co">#&gt;  [7,]                                              -0.7978701</span>
-<span class="co">#&gt;  [8,]                                              -0.7257299</span>
-<span class="co">#&gt;  [9,]                                              -0.9213720</span>
-<span class="co">#&gt; [10,]                                              -1.0733490</span>
+<span class="co">#&gt;  [1,]                                              -1.0206377</span>
+<span class="co">#&gt;  [2,]                                              -1.0823500</span>
+<span class="co">#&gt;  [3,]                                              -0.9756869</span>
+<span class="co">#&gt;  [4,]                                              -0.8931959</span>
+<span class="co">#&gt;  [5,]                                              -0.9316305</span>
+<span class="co">#&gt;  [6,]                                              -1.0264607</span>
+<span class="co">#&gt;  [7,]                                              -0.9943772</span>
+<span class="co">#&gt;  [8,]                                              -0.8862258</span>
+<span class="co">#&gt;  [9,]                                              -0.6718093</span>
+<span class="co">#&gt; [10,]                                              -0.8564776</span>
 <span class="co">#&gt;       Baden-Württemberg – Freiburg – Konstanz</span>
-<span class="co">#&gt;  [1,]                              0.01851758</span>
-<span class="co">#&gt;  [2,]                             -0.30229393</span>
-<span class="co">#&gt;  [3,]                             -0.21787069</span>
-<span class="co">#&gt;  [4,]                             -0.44187612</span>
-<span class="co">#&gt;  [5,]                             -0.03395348</span>
-<span class="co">#&gt;  [6,]                             -0.27138711</span>
-<span class="co">#&gt;  [7,]                             -0.61206933</span>
-<span class="co">#&gt;  [8,]                             -0.26902137</span>
-<span class="co">#&gt;  [9,]                             -0.12078939</span>
-<span class="co">#&gt; [10,]                             -0.69296342</span></code></pre></div>
+<span class="co">#&gt;  [1,]                              -0.2754613</span>
+<span class="co">#&gt;  [2,]                              -0.2427265</span>
+<span class="co">#&gt;  [3,]                              -0.2163561</span>
+<span class="co">#&gt;  [4,]                              -0.2565340</span>
+<span class="co">#&gt;  [5,]                              -0.1035719</span>
+<span class="co">#&gt;  [6,]                              -0.5831163</span>
+<span class="co">#&gt;  [7,]                              -0.5524009</span>
+<span class="co">#&gt;  [8,]                              -0.3249461</span>
+<span class="co">#&gt;  [9,]                              -0.3914829</span>
+<span class="co">#&gt; [10,]                              -0.3361879</span></code></pre></div>
 <p>The variability of the parameter values across different rows directly reflects the estimation uncertainty of the estimates. We can summarize this uncertainty examining the quantiles of the sampling distributions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># point estimate for individual-level predictor sex (male vs. female)</span>
 <span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.5</span>)
 <span class="co">#&gt;        50% </span>
-<span class="co">#&gt; 0.04508828</span>
+<span class="co">#&gt; 0.04367172</span>
 
 <span class="co"># compare to coefficient from model</span>
 <span class="kw">fixef</span>(lm_<span class="dv">2</span>)
@@ -200,15 +201,15 @@ county_intercepts[<span class="dv">1</span><span class="op">:</span><span class=
 <span class="co"># 95% confidence interval for individual-level predictor sex</span>
 <span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
 <span class="co">#&gt;        2.5% </span>
-<span class="co">#&gt; -0.03147081</span>
+<span class="co">#&gt; -0.02721771</span>
 <span class="kw">quantile</span>(fixed_coefs[,<span class="st">&quot;male&quot;</span>], <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
 <span class="co">#&gt;     97.5% </span>
-<span class="co">#&gt; 0.1185391</span>
+<span class="co">#&gt; 0.1206891</span>
 
 <span class="co"># point estimate for varying-intercept of county Konstanz</span>
 <span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.5</span>)
 <span class="co">#&gt;        50% </span>
-<span class="co">#&gt; -0.3349909</span>
+<span class="co">#&gt; -0.3294928</span>
 
 <span class="co"># compare to coefficient from model</span>
 <span class="kw">head</span>(<span class="kw">ranef</span>(lm_<span class="dv">2</span>)<span class="op">$</span>county, <span class="dv">2</span>)
@@ -218,11 +219,11 @@ county_intercepts[<span class="dv">1</span><span class="op">:</span><span class=
 
 <span class="co"># 95% confidence interval for varying-intercept of county Konstanz</span>
 <span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
-<span class="co">#&gt;       2.5% </span>
-<span class="co">#&gt; -0.6775334</span>
+<span class="co">#&gt;      2.5% </span>
+<span class="co">#&gt; -0.680575</span>
 <span class="kw">quantile</span>(county_intercepts[,<span class="kw">unique</span>(xenodat<span class="op">$</span>county)[<span class="dv">62</span>]], <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
-<span class="co">#&gt;      97.5% </span>
-<span class="co">#&gt; -0.0233456</span></code></pre></div>
+<span class="co">#&gt;        97.5% </span>
+<span class="co">#&gt; -0.006820771</span></code></pre></div>
 <p>Now suppose we want to use this to generate confidence intervals for some expected values of specific observations generated in ‘Frequentist Multilevel Modeling I’.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># predicted xenophobic tendency for a female individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
 <span class="co"># point estimate generated by evaluating the linear predictor from the model</span>
@@ -236,14 +237,14 @@ linpred_sims_<span class="dv">1</span> &lt;-<span class="st"> </span>fixed_coefs
 <span class="co"># point estimate</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.5</span>)
 <span class="co">#&gt;        50% </span>
-<span class="co">#&gt; -0.3580027</span>
+<span class="co">#&gt; -0.3504198</span>
 <span class="co"># 95% confidence intervals</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
 <span class="co">#&gt;       2.5% </span>
-<span class="co">#&gt; -0.6811056</span>
+<span class="co">#&gt; -0.6834005</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
 <span class="co">#&gt;       97.5% </span>
-<span class="co">#&gt; -0.04431807</span>
+<span class="co">#&gt; -0.04665315</span>
 
 <span class="co"># predicted xenophobic tendency for a male individual in the county Baden-Württemberg – Freiburg – Konstanz</span>
 <span class="co"># expected value generated by evaluating the linear predictor from the model</span>
@@ -258,14 +259,14 @@ linpred_sims_<span class="dv">2</span> &lt;-<span class="st"> </span>fixed_coefs
 <span class="co"># point estimate</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.5</span>)
 <span class="co">#&gt;        50% </span>
-<span class="co">#&gt; -0.3115301</span>
+<span class="co">#&gt; -0.3143313</span>
 <span class="co"># 95% confidence intervals</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.025</span>) <span class="co"># lower bound</span>
-<span class="co">#&gt;      2.5% </span>
-<span class="co">#&gt; -0.639623</span>
+<span class="co">#&gt;       2.5% </span>
+<span class="co">#&gt; -0.6383307</span>
 <span class="kw">quantile</span>(linpred_sims_<span class="dv">2</span>, <span class="dt">prob =</span> <span class="fl">0.975</span>) <span class="co"># upper bound</span>
-<span class="co">#&gt;        97.5% </span>
-<span class="co">#&gt; -0.002598073</span></code></pre></div>
+<span class="co">#&gt;       97.5% </span>
+<span class="co">#&gt; 0.001277961</span></code></pre></div>
 <p>For Bayesian models all this is even easier, since we do not need to simulate sampling distributions of parameter values. As shown in “Bayesian Multilevel Models in R”, the fitted model automatically returns posterior distributions of estimated parameters. Generating Bayesian credible intervals around expected values of specific observations is then just the same as depicted for frequentist multilevel models above.</p>
 </div>
 </div>
@@ -295,7 +296,7 @@ expected_values &lt;-<span class="st"> </span>fixed_coefs[<span class="dv">1</sp
 average_pred &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dt">times =</span> <span class="kw">nrow</span>(fixed_coefs)) <span class="co"># set up vector for storage</span>
 average_pred[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">mean</span>(expected_values) <span class="co"># average over cases</span>
 average_pred[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>]
-<span class="co">#&gt;  [1] 0.06064891         NA         NA         NA         NA         NA</span>
+<span class="co">#&gt;  [1] 0.04959698         NA         NA         NA         NA         NA</span>
 <span class="co">#&gt;  [7]         NA         NA         NA         NA</span></code></pre></div>
 <p>Now we could embedd this in a loop and iterate over the 1 to n draws to fill up the remaining NAs. But this would not be very efficient as it is very slow for complex models and large datasets and tedious to construct with a new problem at hand. So to make things a little bit easier and faster we next introduce a custom R function to obtain population-averaged predictions using the illustrated logic.</p>
 </div>
@@ -326,9 +327,9 @@ posteriors &lt;-<span class="st"> </span><span class="kw">list</span>(<span clas
                    <span class="dt">alpha_county =</span> county_intercepts) <span class="co"># this is as observed</span>
 <span class="kw">glimpse</span>(posteriors)
 <span class="co">#&gt; List of 3</span>
-<span class="co">#&gt;  $ mu          : num [1:1000] -0.029 0.0285 -0.0918 -0.0177 -0.1194 ...</span>
-<span class="co">#&gt;  $ beta_sex    : num [1:1000] 0.0922 0.0667 0.1019 0.0567 0.0721 ...</span>
-<span class="co">#&gt;  $ alpha_county: num [1:1000, 1:152] -0.841 -1.057 -0.818 -0.807 -0.957 ...</span>
+<span class="co">#&gt;  $ mu          : num [1:1000] -0.0266 -0.0606 -0.011 -0.0245 0.0999 ...</span>
+<span class="co">#&gt;  $ beta_sex    : num [1:1000] 0.09482 0.07592 0.00556 0.05508 -0.01687 ...</span>
+<span class="co">#&gt;  $ alpha_county: num [1:1000, 1:152] -1.021 -1.082 -0.976 -0.893 -0.932 ...</span>
 <span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span>
 <span class="co">#&gt;   .. ..$ : NULL</span>
 <span class="co">#&gt;   .. ..$ : chr [1:152] &quot;Baden-Württemberg – Freiburg – Breisgau-Hochschwarzwald&quot; &quot;Baden-Württemberg – Freiburg – Konstanz&quot; &quot;Baden-Württemberg – Freiburg – Rottweil&quot; &quot;Baden-Württemberg – Freiburg – Schwarzwald-Baar-Kreis&quot; ...</span></code></pre></div>
@@ -349,7 +350,7 @@ popavg_pred_<span class="dv">1</span> &lt;-<span class="st"> </span><span class=
 <span class="co">#&gt; Observations: 2,000</span>
 <span class="co">#&gt; Variables: 3</span>
 <span class="co">#&gt; $ draw &lt;fct&gt; V1, V1, V2, V2, V3, V3, V4, V4, V5, V5, V6, V6, V7, V7, V...</span>
-<span class="co">#&gt; $ y    &lt;dbl&gt; -3.158128e-02, 6.064891e-02, -4.036649e-02, 2.632146e-02,...</span>
+<span class="co">#&gt; $ y    &lt;dbl&gt; -0.045221358, 0.049596977, -0.055997176, 0.019921656, -0....</span>
 <span class="co">#&gt; $ x    &lt;int&gt; 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, ...</span>
 
 <span class="co"># point prediction and 95% confidence intervals for each level of x</span>
@@ -361,8 +362,8 @@ popavg_pred_<span class="dv">1</span> <span class="op">%&gt;%</span><span class=
 <span class="co">#&gt; # A tibble: 2 x 4</span>
 <span class="co">#&gt;       x   lower  upper     fit</span>
 <span class="co">#&gt;   &lt;int&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span>
-<span class="co">#&gt; 1     0 -0.0764 0.0326 -0.0219</span>
-<span class="co">#&gt; 2     1 -0.0314 0.0730  0.0229</span></code></pre></div>
+<span class="co">#&gt; 1     0 -0.0725 0.0318 -0.0214</span>
+<span class="co">#&gt; 2     1 -0.0310 0.0768  0.0225</span></code></pre></div>
 <p>This was not so hard. Now with a more complex example with counties nested in states and the quota and squared quota of foreigners as group-level predictors at the county level (previously lm_4).</p>
 <p align="center">
 <span class="math inline">\(y_i \sim\)</span> N<span class="math inline">\((\mu + \alpha_{jk} + \beta x_i , \sigma^2_y)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_{jk} \sim\)</span> N<span class="math inline">\((\gamma_k + \beta_1 u_j + \beta_2 u{_j^2}, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br>
@@ -374,7 +375,7 @@ lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">lmer
              <span class="dt">REML =</span> <span class="ot">TRUE</span>)
 
 <span class="co"># simulate the sampling distribution of the parameters</span>
-sims_lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">sim</span>(<span class="dt">object =</span> lm_<span class="dv">4</span>, <span class="dt">n.sims =</span> <span class="dv">1000</span>)
+sims_lm_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">sim</span>(<span class="dt">object =</span> lm_<span class="dv">4</span>, <span class="dt">n.sims =</span> <span class="dv">4000</span>)
 
 <span class="co"># extract simulations of mu and the betas</span>
 fixed_coefs &lt;-<span class="st"> </span>sims_lm_<span class="dv">4</span><span class="op">@</span>fixef
@@ -388,8 +389,7 @@ state_intercepts &lt;-<span class="st"> </span>sims_lm_<span class="dv">4</span>
 fixed_coefs &lt;-<span class="st"> </span><span class="kw">cbind</span>(fixed_coefs, <span class="dt">female =</span> <span class="dv">0</span>)
 
 <span class="co"># rename columns of county_intercepts to match original names in the data</span>
-<span class="kw">colnames</span>(county_intercepts) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>county)[[<span class="dv">2</span>]]
-<span class="kw">colnames</span>(state_intercepts) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(sims_lm_<span class="dv">4</span><span class="op">@</span>ranef<span class="op">$</span>state)[[<span class="dv">2</span>]]
+<span class="kw">colnames</span>(county_intercepts) &lt;-<span class="st"> </span><span class="kw">str_replace</span>(<span class="kw">colnames</span>(county_intercepts), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">:.+&quot;</span>, <span class="st">&quot;&quot;</span>) 
 
 <span class="co"># assemble data for data argument</span>
 data &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(xenodat, sex, county, state)
@@ -413,16 +413,16 @@ linear_predictor &lt;-<span class="st"> &quot;mu[n] + alpha_county[n, county] + 
 <span class="co"># apply mlAME() function</span>
 popavg_pred_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">mlAMEs</span>(<span class="dt">data =</span> data, 
                         <span class="dt">levels =</span> levels, 
-                        <span class="dt">draws =</span> <span class="dv">1000</span>, 
+                        <span class="dt">draws =</span> <span class="dv">4000</span>, 
                         <span class="dt">posterior =</span> posteriors, 
                         <span class="dt">linear_predictor =</span> linear_predictor, 
                         <span class="dt">type =</span> <span class="st">&quot;linear&quot;</span>)
 
 <span class="kw">glimpse</span>(popavg_pred_<span class="dv">2</span>)
-<span class="co">#&gt; Observations: 20,000</span>
+<span class="co">#&gt; Observations: 80,000</span>
 <span class="co">#&gt; Variables: 3</span>
 <span class="co">#&gt; $ draw &lt;fct&gt; V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V1, V...</span>
-<span class="co">#&gt; $ y    &lt;dbl&gt; 0.134625210, 0.087113076, 0.043571632, 0.004000879, -0.03...</span>
+<span class="co">#&gt; $ y    &lt;dbl&gt; 0.05922901, 0.05878487, 0.05815472, 0.05733856, 0.0563363...</span>
 <span class="co">#&gt; $ x    &lt;dbl&gt; 0.00000000, 0.01315789, 0.02631579, 0.03947368, 0.0526315...</span>
 
 <span class="co"># point prediction and 95% confidence intervals for each level of x</span>
@@ -432,28 +432,28 @@ popavg_pred_<span class="dv">2</span> <span class="op">%&gt;%</span><span class=
             <span class="dt">upper =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.975</span>),
             <span class="dt">fit =</span> <span class="kw">quantile</span>(y, <span class="dt">prob =</span> <span class="fl">0.50</span>))
 <span class="co">#&gt; # A tibble: 20 x 4</span>
-<span class="co">#&gt;         x   lower upper      fit</span>
-<span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 0      -0.106  0.408  0.144  </span>
-<span class="co">#&gt;  2 0.0132 -0.0829 0.276  0.0973 </span>
-<span class="co">#&gt;  3 0.0263 -0.0805 0.179  0.0519 </span>
-<span class="co">#&gt;  4 0.0395 -0.114  0.137  0.00758</span>
-<span class="co">#&gt;  5 0.0526 -0.161  0.126 -0.0285 </span>
-<span class="co">#&gt;  6 0.0658 -0.221  0.123 -0.0631 </span>
-<span class="co">#&gt;  7 0.0789 -0.284  0.122 -0.0889 </span>
-<span class="co">#&gt;  8 0.0921 -0.327  0.119 -0.111  </span>
-<span class="co">#&gt;  9 0.105  -0.365  0.117 -0.129  </span>
-<span class="co">#&gt; 10 0.118  -0.389  0.116 -0.143  </span>
-<span class="co">#&gt; 11 0.132  -0.413  0.112 -0.151  </span>
-<span class="co">#&gt; 12 0.145  -0.419  0.115 -0.157  </span>
-<span class="co">#&gt; 13 0.158  -0.431  0.130 -0.157  </span>
-<span class="co">#&gt; 14 0.171  -0.453  0.150 -0.152  </span>
-<span class="co">#&gt; 15 0.184  -0.476  0.198 -0.138  </span>
-<span class="co">#&gt; 16 0.197  -0.503  0.257 -0.130  </span>
-<span class="co">#&gt; 17 0.211  -0.556  0.364 -0.108  </span>
-<span class="co">#&gt; 18 0.224  -0.605  0.438 -0.0904 </span>
-<span class="co">#&gt; 19 0.237  -0.656  0.568 -0.0695 </span>
-<span class="co">#&gt; 20 0.25   -0.706  0.721 -0.0470</span></code></pre></div>
+<span class="co">#&gt;         x   lower  upper      fit</span>
+<span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 0      -0.0972 0.397   0.153  </span>
+<span class="co">#&gt;  2 0.0132 -0.0770 0.276   0.0983 </span>
+<span class="co">#&gt;  3 0.0263 -0.0808 0.184   0.0513 </span>
+<span class="co">#&gt;  4 0.0395 -0.117  0.136   0.00895</span>
+<span class="co">#&gt;  5 0.0526 -0.172  0.117  -0.0293 </span>
+<span class="co">#&gt;  6 0.0658 -0.230  0.107  -0.0630 </span>
+<span class="co">#&gt;  7 0.0789 -0.283  0.104  -0.0911 </span>
+<span class="co">#&gt;  8 0.0921 -0.329  0.101  -0.115  </span>
+<span class="co">#&gt;  9 0.105  -0.365  0.0958 -0.134  </span>
+<span class="co">#&gt; 10 0.118  -0.391  0.0916 -0.149  </span>
+<span class="co">#&gt; 11 0.132  -0.406  0.0945 -0.160  </span>
+<span class="co">#&gt; 12 0.145  -0.419  0.0997 -0.165  </span>
+<span class="co">#&gt; 13 0.158  -0.432  0.118  -0.165  </span>
+<span class="co">#&gt; 14 0.171  -0.457  0.151  -0.160  </span>
+<span class="co">#&gt; 15 0.184  -0.480  0.202  -0.152  </span>
+<span class="co">#&gt; 16 0.197  -0.517  0.266  -0.136  </span>
+<span class="co">#&gt; 17 0.211  -0.567  0.351  -0.117  </span>
+<span class="co">#&gt; 18 0.224  -0.624  0.463  -0.0953 </span>
+<span class="co">#&gt; 19 0.237  -0.701  0.583  -0.0669 </span>
+<span class="co">#&gt; 20 0.25   -0.783  0.738  -0.0368</span></code></pre></div>
 <p>With a Bayesian model estimated via <code>rstan</code> this is even easier. We illustrate the full workflow with glm_3 from ‘Bayesian multilevel modeling in R’.</p>
 <p align="center">
 <span class="math inline">\(y_i \sim\)</span> Bin<span class="math inline">\((n_i, \pi_i)\)</span> <br> <span class="math inline">\(\pi_i =\)</span> logit<span class="math inline">\(^{-1}(\mu + \alpha_{j} + \gamma_{k} + \delta_{l} + \zeta_{m} + \beta x_i)\)</span>, for <span class="math inline">\(i = 1, ..., n\)</span> <br> <span class="math inline">\(\alpha_j \sim\)</span> N<span class="math inline">\((0, \sigma^2_\alpha)\)</span> for <span class="math inline">\(j = 1, ..., J\)</span> <br> <span class="math inline">\(\gamma_k \sim\)</span> N<span class="math inline">\((0, \sigma^2_\gamma)\)</span> for <span class="math inline">\(k = 1, ..., K\)</span> <br> <span class="math inline">\(\delta_l \sim\)</span> N<span class="math inline">\((0, \sigma^2_\delta)\)</span> for <span class="math inline">\(l = 1, ..., L\)</span> <br> <span class="math inline">\(\zeta_m \sim\)</span> N<span class="math inline">\((0, \sigma^2_\zeta)\)</span> for <span class="math inline">\(m = 1, ..., M\)</span>
@@ -540,6 +540,10 @@ popavg_pred_<span class="dv">3</span> <span class="op">%&gt;%</span><span class=
 <span class="co">#&gt; 18 23.3  0.803 0.947 0.894</span>
 <span class="co">#&gt; 19 24.6  0.817 0.956 0.906</span>
 <span class="co">#&gt; 20 26    0.829 0.963 0.918</span></code></pre></div>
+<p>Suppose you wanted to run the same prediction but this time you fix the party variable at a specific value and want the income variable to be considered as observed. In such a case you alter the data accordingly, i.e., fix party at a value, add the income variable to <code>data</code>, and then set levels to <code>list(x = 1)</code>. This is required, as an <code>x</code> must be supplied to the function, even when it is not specified in the linear predictor. It simply tells the function to run only once. You also have to adjust the linear predictor in the following way:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">linear_predictor &lt;-<span class="st"> &quot;mu[n] + alpha[n, race] + gamma[n, age] + delta[n, party] + </span>
+<span class="st">                     zeta[n, congdist] + beta[n] %o% income&quot;</span></code></pre></div>
+<p><code>party</code> is fixed at a specific value, so this is simply indexed. <code>income</code> is held as observed, so this is just the column from <code>voterdat</code>. However, income is numeric and no indexing is done here, since there is no specific parameter for a specific value in the data, as is the case for categorical variables. So instead of doing <code>beta[n]*income</code>, you have to exchange multiplication with the outer product, i.e., <code>%o%</code>. This is necessary because two vectors with different lengths are multiplied and you do not want a vector but a matrix as a result, where rows are the draws of beta and columns are the product of the respective draw of beta with each income value in the data.</p>
 <p>Thus far our population-averaged predictions do only cover estimation uncertainty. For additional predictive uncertainty we would have to incorporate the evaluation of the linear predictor in <code>mlAMEs()</code> inside the stochastic component of the model. For a linear model this means wrapping a normal distribution around the generated expected values and adding the posterior of residual variance parameters. For a logit model this means wrapping a binomial distribution around the generated probability values. I might add this to the function later.</p>
 <p>In the last session we will take this knowledge one step further and learn how to visualize and communicate these results.</p>
 </div>
