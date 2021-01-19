@@ -22,7 +22,7 @@ Slides can be downloaded [here](https://github.com/saschagobel/teaching/tree/mas
 
 This course was taught in winter semester 2020/21 at the University of Konstanz.
 
-The course syllabus and slides can be downloaded [here](https://github.com/saschagobel/teaching/tree/master/slides/web-data-collection), R code is available [here](https://github.com/saschagobel/teaching/tree/master/slides/web-data-collection).
+The course syllabus and slides can be downloaded [here](https://github.com/saschagobel/teaching/tree/master/slides/web-data-collection), R code is available [here](https://github.com/saschagobel/teaching/tree/master/code/web-data-collection).
 
 ### Course Description
 Finding and collecting data is a central yet often challenging and time consuming part of the research process. An increasingly popular source of information for social scientists is offered by the World Wide Web. Every day, governments, companies, and individual persons share and create large quantities of information on the internet, such as administrative records, search engine queries, website traffic, interactions on social networks, etc. The scale at which data is available on the web precludes manual data collection. Fortunately, the ways in which data are stored online often allow for automating the collection process. In this course students will learn how to identify and efficiently collect information from the web. We will cover basic knowledge about web architectures, legal and ethical concerns, the tools required to extract data from static and dynamic web pages, how to tap APIs, and how to process and explore the collected data. Most of the sessions are hands-on using R.
